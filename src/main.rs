@@ -1,7 +1,7 @@
 mod algorithm;
 mod solitaire;
 
-use algorithm::dfs::DFS;
+use crate::algorithm::{bfs::BFS, dfs::DFS};
 
 use self::solitaire::Board;
 
