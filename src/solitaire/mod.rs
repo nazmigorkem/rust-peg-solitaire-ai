@@ -3,15 +3,15 @@ use std::collections::HashSet;
 pub mod enums;
 #[derive(Debug, Clone)]
 pub struct Board {
-    pub pegs: HashSet<(usize, usize)>,
-    pub empty_holes: HashSet<(usize, usize)>,
+    pub pegs: HashSet<(u8, u8)>,
+    pub empty_holes: HashSet<(u8, u8)>,
     pub depth: usize,
 }
 
 impl Board {
     pub fn new() -> Board {
-        let mut pegs: HashSet<(usize, usize)> = HashSet::new();
-        let mut empty_holes: HashSet<(usize, usize)> = HashSet::new();
+        let mut pegs: HashSet<(u8, u8)> = HashSet::new();
+        let mut empty_holes: HashSet<(u8, u8)> = HashSet::new();
         for i in 0..7 {
             for j in 0..7 {
                 if i == 3 && j == 3 {
@@ -32,10 +32,10 @@ impl Board {
         let mut board: Vec<Vec<&str>> = vec![vec!["- "; 7]; 7];
 
         for i in self.pegs.iter() {
-            board[i.0][i.1] = "o ";
+            board[i.0 as usize][i.1 as usize] = "o ";
         }
         for i in self.empty_holes.iter() {
-            board[i.0][i.1] = "  ";
+            board[i.0 as usize][i.1 as usize] = "  ";
         }
 
         for i in board {
@@ -47,13 +47,13 @@ impl Board {
         print!("\x1b[8F");
     }
 
-    pub fn generate_possible_moves(&self) -> Vec<Board> {
+    pub fn generate_possible_moves(&self, is_random: bool) -> Vec<Board> {
         let mut outcome: Vec<Board> = Vec::new();
         for (i, j) in self.empty_holes.clone() {
             for k in vec![-2, 2] {
                 if i as i16 + k >= 0
-                    && self.pegs.contains(&((i as i16 + k) as usize, j))
-                    && self.pegs.contains(&((i as i16 + k / 2) as usize, j))
+                    && self.pegs.contains(&((i as i16 + k) as u8, j))
+                    && self.pegs.contains(&((i as i16 + k / 2) as u8, j))
                 {
                     outcome.push(Board::apply_moves(
                         self.pegs.clone(),
@@ -66,8 +66,8 @@ impl Board {
                     ));
                 }
                 if j as i16 + k >= 0
-                    && self.pegs.contains(&(i, (j as i16 + k) as usize))
-                    && self.pegs.contains(&(i, (j as i16 + k / 2) as usize))
+                    && self.pegs.contains(&(i, (j as i16 + k) as u8))
+                    && self.pegs.contains(&(i, (j as i16 + k / 2) as u8))
                 {
                     outcome.push(Board::apply_moves(
                         self.pegs.clone(),
@@ -85,8 +85,8 @@ impl Board {
     }
 
     pub fn apply_moves(
-        pegs: HashSet<(usize, usize)>,
-        empty_holes: HashSet<(usize, usize)>,
+        pegs: HashSet<(u8, u8)>,
+        empty_holes: HashSet<(u8, u8)>,
         i: i16,
         j: i16,
         direction: i16,
@@ -96,16 +96,16 @@ impl Board {
         let mut new_pegs = pegs.clone();
         let mut new_empty_holes = empty_holes.clone();
         if is_vertical {
-            let died_peg_position = ((i + direction / 2) as usize, j as usize);
-            let murderer_peg_position = ((i + direction) as usize, j as usize);
+            let died_peg_position = ((i + direction / 2) as u8, j as u8);
+            let murderer_peg_position = ((i + direction) as u8, j as u8);
 
             new_pegs.remove(&died_peg_position);
             new_pegs.remove(&murderer_peg_position);
-            new_empty_holes.remove(&(i as usize, j as usize));
+            new_empty_holes.remove(&(i as u8, j as u8));
 
             new_empty_holes.insert(died_peg_position);
             new_empty_holes.insert(murderer_peg_position);
-            new_pegs.insert((i as usize, j as usize));
+            new_pegs.insert((i as u8, j as u8));
 
             return Board {
                 pegs: new_pegs,
@@ -113,16 +113,16 @@ impl Board {
                 depth: new_depth,
             };
         } else {
-            let died_peg_position = (i as usize, (j + direction / 2) as usize);
-            let murderer_peg_position = (i as usize, (j + direction) as usize);
+            let died_peg_position = (i as u8, (j + direction / 2) as u8);
+            let murderer_peg_position = (i as u8, (j + direction) as u8);
 
             new_pegs.remove(&died_peg_position);
             new_pegs.remove(&murderer_peg_position);
-            new_empty_holes.remove(&(i as usize, j as usize));
+            new_empty_holes.remove(&(i as u8, j as u8));
 
             new_empty_holes.insert(died_peg_position);
             new_empty_holes.insert(murderer_peg_position);
-            new_pegs.insert((i as usize, j as usize));
+            new_pegs.insert((i as u8, j as u8));
 
             return Board {
                 pegs: new_pegs,

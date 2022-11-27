@@ -10,7 +10,7 @@ pub trait DFS {
 impl DFS for Board {
     fn solve_dfs(&self) -> i32 {
         let mut frontier_list: VecDeque<Board> = VecDeque::new();
-        self.generate_possible_moves()
+        self.generate_possible_moves(false)
             .iter()
             .for_each(|x| frontier_list.push_back(x.clone()));
         let mut count = 1;
@@ -30,7 +30,7 @@ impl DFS for Board {
             }
 
             current
-                .generate_possible_moves()
+                .generate_possible_moves(false)
                 .iter()
                 .for_each(|x| frontier_list.push_back(x.clone()));
         }

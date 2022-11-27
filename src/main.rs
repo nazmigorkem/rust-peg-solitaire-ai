@@ -8,5 +8,5 @@ use self::solitaire::Board;
 fn main() {
     let board = Board::new();
 
-    println!("{}", board.solve_iterative_deepening());
+    println!("{}", board.solve_dfs());
 }
