@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 pub mod enums;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Board {
     pub pegs: HashSet<(usize, usize)>,
     pub empty_holes: HashSet<(usize, usize)>,
@@ -39,7 +39,7 @@ impl Board {
             }
             print!("\n");
         }
-        print!("\n");
+        print!("\x1b[8F");
     }
 
     pub fn generate_possible_moves(&self) -> Vec<Board> {
@@ -120,5 +120,16 @@ impl Board {
                 empty_holes: new_empty_holes,
             };
         }
+    }
+
+    pub fn is_goal_state(&self) -> bool {
+        if self.pegs.len() != 1 {
+            return false;
+        }
+        if self.pegs.get(&(3, 3)).is_none() {
+            return false;
+        }
+
+        true
     }
 }
