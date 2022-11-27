@@ -1,3 +1,4 @@
+mod algorithm;
 mod solitaire;
 
 use self::solitaire::Board;
