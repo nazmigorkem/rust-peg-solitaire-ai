@@ -1,4 +1,3 @@
-use core::time;
 use std::collections::VecDeque;
 
 use crate::solitaire::Board;
@@ -23,7 +22,6 @@ impl BFS for Board {
                 println!("{}", count);
                 current.print_board();
             }
-            // std::thread::sleep(time::Duration::from_millis(1000));
             if current.is_goal_state() {
                 final_result = current;
                 break;

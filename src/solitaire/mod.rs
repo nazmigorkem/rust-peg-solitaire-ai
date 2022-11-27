@@ -47,35 +47,34 @@ impl Board {
         print!("\x1b[8F");
     }
 
-    pub fn generate_possible_moves(&self, is_random: bool) -> Vec<Board> {
+    pub fn generate_possible_moves(&self, _is_random: bool) -> Vec<Board> {
         let mut outcome: Vec<Board> = Vec::new();
         for (i, j) in self.empty_holes.clone() {
             for k in vec![-2, 2] {
+                let mut direction: bool = true;
+                let mut is_ok = false;
                 if i as i16 + k >= 0
                     && self.pegs.contains(&((i as i16 + k) as u8, j))
                     && self.pegs.contains(&((i as i16 + k / 2) as u8, j))
                 {
-                    outcome.push(Board::apply_moves(
-                        self.pegs.clone(),
-                        self.empty_holes.clone(),
-                        i as i16,
-                        j as i16,
-                        k,
-                        true,
-                        self.depth + 1,
-                    ));
+                    direction = true;
+                    is_ok = true;
                 }
                 if j as i16 + k >= 0
                     && self.pegs.contains(&(i, (j as i16 + k) as u8))
                     && self.pegs.contains(&(i, (j as i16 + k / 2) as u8))
                 {
+                    is_ok = true;
+                    direction = false;
+                }
+                if is_ok {
                     outcome.push(Board::apply_moves(
                         self.pegs.clone(),
                         self.empty_holes.clone(),
                         i as i16,
                         j as i16,
                         k,
-                        false,
+                        direction,
                         self.depth + 1,
                     ));
                 }
@@ -95,41 +94,28 @@ impl Board {
     ) -> Board {
         let mut new_pegs = pegs.clone();
         let mut new_empty_holes = empty_holes.clone();
+        let died_peg_position: (u8, u8);
+        let murderer_peg_position: (u8, u8);
         if is_vertical {
-            let died_peg_position = ((i + direction / 2) as u8, j as u8);
-            let murderer_peg_position = ((i + direction) as u8, j as u8);
-
-            new_pegs.remove(&died_peg_position);
-            new_pegs.remove(&murderer_peg_position);
-            new_empty_holes.remove(&(i as u8, j as u8));
-
-            new_empty_holes.insert(died_peg_position);
-            new_empty_holes.insert(murderer_peg_position);
-            new_pegs.insert((i as u8, j as u8));
-
-            return Board {
-                pegs: new_pegs,
-                empty_holes: new_empty_holes,
-                depth: new_depth,
-            };
+            died_peg_position = ((i + direction / 2) as u8, j as u8);
+            murderer_peg_position = ((i + direction) as u8, j as u8);
         } else {
-            let died_peg_position = (i as u8, (j + direction / 2) as u8);
-            let murderer_peg_position = (i as u8, (j + direction) as u8);
-
-            new_pegs.remove(&died_peg_position);
-            new_pegs.remove(&murderer_peg_position);
-            new_empty_holes.remove(&(i as u8, j as u8));
-
-            new_empty_holes.insert(died_peg_position);
-            new_empty_holes.insert(murderer_peg_position);
-            new_pegs.insert((i as u8, j as u8));
-
-            return Board {
-                pegs: new_pegs,
-                empty_holes: new_empty_holes,
-                depth: new_depth,
-            };
+            died_peg_position = (i as u8, (j + direction / 2) as u8);
+            murderer_peg_position = (i as u8, (j + direction) as u8);
         }
+        new_pegs.remove(&died_peg_position);
+        new_pegs.remove(&murderer_peg_position);
+        new_empty_holes.remove(&(i as u8, j as u8));
+
+        new_empty_holes.insert(died_peg_position);
+        new_empty_holes.insert(murderer_peg_position);
+        new_pegs.insert((i as u8, j as u8));
+
+        return Board {
+            pegs: new_pegs,
+            empty_holes: new_empty_holes,
+            depth: new_depth,
+        };
     }
 
     pub fn is_goal_state(&self) -> bool {
