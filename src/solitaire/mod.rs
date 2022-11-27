@@ -5,6 +5,7 @@ pub mod enums;
 pub struct Board {
     pub pegs: HashSet<(usize, usize)>,
     pub empty_holes: HashSet<(usize, usize)>,
+    pub depth: usize,
 }
 
 impl Board {
@@ -20,7 +21,11 @@ impl Board {
                 }
             }
         }
-        Board { pegs, empty_holes }
+        Board {
+            pegs,
+            empty_holes,
+            depth: 0,
+        }
     }
 
     pub fn print_board(&self) {
@@ -57,6 +62,7 @@ impl Board {
                         j as i16,
                         k,
                         true,
+                        self.depth + 1,
                     ));
                 }
                 if j as i16 + k >= 0
@@ -70,6 +76,7 @@ impl Board {
                         j as i16,
                         k,
                         false,
+                        self.depth + 1,
                     ));
                 }
             }
@@ -84,6 +91,7 @@ impl Board {
         j: i16,
         direction: i16,
         is_vertical: bool,
+        new_depth: usize,
     ) -> Board {
         let mut new_pegs = pegs.clone();
         let mut new_empty_holes = empty_holes.clone();
@@ -102,6 +110,7 @@ impl Board {
             return Board {
                 pegs: new_pegs,
                 empty_holes: new_empty_holes,
+                depth: new_depth,
             };
         } else {
             let died_peg_position = (i as usize, (j + direction / 2) as usize);
@@ -118,6 +127,7 @@ impl Board {
             return Board {
                 pegs: new_pegs,
                 empty_holes: new_empty_holes,
+                depth: new_depth,
             };
         }
     }

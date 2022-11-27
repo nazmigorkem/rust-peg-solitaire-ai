@@ -20,7 +20,7 @@ impl DFS for Board {
 
             let current = frontier_list.pop_back().unwrap();
             if count % 50_000 == 0 {
-                println!("{}", count);
+                println!("{} {}", count, current.depth);
                 current.print_board();
             }
             // std::thread::sleep(time::Duration::from_millis(1000));
