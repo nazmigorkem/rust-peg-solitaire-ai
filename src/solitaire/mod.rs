@@ -23,7 +23,24 @@ impl Board {
         Board { pegs, empty_holes }
     }
 
-    pub fn print_board(&self) {}
+    pub fn print_board(&self) {
+        let mut board: Vec<Vec<&str>> = vec![vec!["- "; 7]; 7];
+
+        for i in self.pegs.iter() {
+            board[i.0][i.1] = "o ";
+        }
+        for i in self.empty_holes.iter() {
+            board[i.0][i.1] = "  ";
+        }
+
+        for i in board {
+            for j in i {
+                print!("{}", j);
+            }
+            print!("\n");
+        }
+        print!("\n");
+    }
 
     pub fn generate_possible_moves(&self) -> Vec<Board> {
         let mut outcome: Vec<Board> = Vec::new();
@@ -71,8 +88,8 @@ impl Board {
         let mut new_pegs = pegs.clone();
         let mut new_empty_holes = empty_holes.clone();
         if is_vertical {
-            let died_peg_position = ((i - direction / 2) as usize, j as usize);
-            let murderer_peg_position = ((i - direction) as usize, j as usize);
+            let died_peg_position = ((i + direction / 2) as usize, j as usize);
+            let murderer_peg_position = ((i + direction) as usize, j as usize);
 
             new_pegs.remove(&died_peg_position);
             new_pegs.remove(&murderer_peg_position);
@@ -87,8 +104,8 @@ impl Board {
                 empty_holes: new_empty_holes,
             };
         } else {
-            let died_peg_position = (i as usize, (j - direction / 2) as usize);
-            let murderer_peg_position = (i as usize, (j - direction) as usize);
+            let died_peg_position = (i as usize, (j + direction / 2) as usize);
+            let murderer_peg_position = (i as usize, (j + direction) as usize);
 
             new_pegs.remove(&died_peg_position);
             new_pegs.remove(&murderer_peg_position);
