@@ -8,5 +8,5 @@ use self::solitaire::Board;
 fn main() {
     let board = Board::new();
 
-    println!("{}", board.solve_dfs());
+    println!("{}", board.generate_possible_moves(false)[0].solve_dfs());
 }

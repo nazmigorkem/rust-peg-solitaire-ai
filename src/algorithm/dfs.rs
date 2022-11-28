@@ -3,11 +3,11 @@ use std::collections::VecDeque;
 use crate::solitaire::Board;
 
 pub trait DFS {
-    fn solve_dfs(&self) -> i32;
+    fn solve_dfs(&self) -> u64;
 }
 
 impl DFS for Board {
-    fn solve_dfs(&self) -> i32 {
+    fn solve_dfs(&self) -> u64 {
         let mut frontier_list: VecDeque<Board> = VecDeque::new();
         self.generate_possible_moves(false)
             .iter()
@@ -19,8 +19,7 @@ impl DFS for Board {
 
             let current = frontier_list.pop_back().unwrap();
             if count % 50_000 == 0 {
-                println!("{} {}", count, current.depth);
-                current.print_board();
+                current.print_board(count, current.depth);
             }
             if current.is_goal_state() {
                 final_result = current;
@@ -32,7 +31,7 @@ impl DFS for Board {
                 .iter()
                 .for_each(|x| frontier_list.push_back(x.clone()));
         }
-        final_result.print_board();
+        final_result.print_board(count, final_result.depth);
         return count;
     }
 }
