@@ -1,13 +1,9 @@
 use std::collections::VecDeque;
 
-use crate::solitaire::Board;
-
-pub trait IterativeDeepining {
-    fn solve_iterative_deepening(&self) -> u64;
-}
+use crate::solitaire::{enums::IterativeDeepining, Board};
 
 impl IterativeDeepining for Board {
-    fn solve_iterative_deepening(&self) -> u64 {
+    fn solve_iterative_deepening(&self) {
         let mut count = 1;
         let mut final_result: Board = Board::new();
         let depth_limit = 31;
@@ -38,6 +34,5 @@ impl IterativeDeepining for Board {
             current_limit += 1;
         }
         final_result.print_board(count, final_result.depth);
-        return count;
     }
 }

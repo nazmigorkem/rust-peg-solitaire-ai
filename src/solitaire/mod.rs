@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use rand::{seq::SliceRandom, thread_rng};
+
 pub mod enums;
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -16,7 +18,7 @@ impl Board {
             for j in 0..7 {
                 if i == 3 && j == 3 {
                     empty_holes.push((i, j));
-                } else if !(((i < 2 || i > 4) && j < 2) || ((i < 2 || i > 4) && j > 4)) {
+                } else if !((i < 2 || i > 4) && (j < 2 || j > 4)) {
                     pegs.insert((i, j));
                 }
             }
@@ -47,22 +49,28 @@ impl Board {
         print!("\x1b[8F");
     }
 
-    pub fn generate_possible_moves(&self, _is_random: bool) -> Vec<Board> {
+    pub fn generate_possible_moves(&self, is_random: bool) -> Vec<Board> {
         let mut outcome: Vec<Board> = Vec::new();
-        for (index, (i, j)) in self.empty_holes.clone().iter().enumerate() {
+        let current_empty_holes = self.empty_holes.clone();
+        let mut indexes: Vec<usize> = (0..current_empty_holes.len()).collect();
+        if is_random {
+            indexes.shuffle(&mut thread_rng());
+        }
+        for index in indexes {
+            let (i, j) = current_empty_holes[index];
             for k in vec![-2, 2] {
                 let mut direction: bool = true;
                 let mut is_ok = false;
-                if *i as i16 + k >= 0
-                    && self.pegs.contains(&((*i as i16 + k) as u8, *j))
-                    && self.pegs.contains(&((*i as i16 + k / 2) as u8, *j))
+                if i as i16 + k >= 0
+                    && self.pegs.contains(&((i as i16 + k) as u8, j))
+                    && self.pegs.contains(&((i as i16 + k / 2) as u8, j))
                 {
                     direction = true;
                     is_ok = true;
                 }
-                if *j as i16 + k >= 0
-                    && self.pegs.contains(&(*i, (*j as i16 + k) as u8))
-                    && self.pegs.contains(&(*i, (*j as i16 + k / 2) as u8))
+                if j as i16 + k >= 0
+                    && self.pegs.contains(&(i, (j as i16 + k) as u8))
+                    && self.pegs.contains(&(i, (j as i16 + k / 2) as u8))
                 {
                     is_ok = true;
                     direction = false;
@@ -71,8 +79,8 @@ impl Board {
                     outcome.push(Board::apply_moves(
                         self.pegs.clone(),
                         self.empty_holes.clone(),
-                        *i as i16,
-                        *j as i16,
+                        i as i16,
+                        j as i16,
                         k,
                         direction,
                         self.depth + 1,

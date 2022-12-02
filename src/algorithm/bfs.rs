@@ -1,13 +1,9 @@
 use std::collections::VecDeque;
 
-use crate::solitaire::Board;
-
-pub trait BFS {
-    fn solve_bfs(&self) -> u64;
-}
+use crate::solitaire::{enums::BFS, Board};
 
 impl BFS for Board {
-    fn solve_bfs(&self) -> u64 {
+    fn solve_bfs(&self) {
         let mut frontier_list: VecDeque<Board> = VecDeque::new();
         self.generate_possible_moves(false)
             .iter()
@@ -32,6 +28,5 @@ impl BFS for Board {
                 .for_each(|x| frontier_list.push_back(x.clone()));
         }
         final_result.print_board(count, final_result.depth);
-        return count;
     }
 }
