@@ -29,10 +29,9 @@ impl DFSWithHeuristic for Board {
             count += 1;
 
             let current = frontier_list.pop_back().unwrap();
-            if count % 50_000 == 0 {
-                current.print_board(count, current.depth);
-            }
-            // thread::sleep(Duration::from_millis(1000));
+            if count % 50_000 == 0 {}
+            current.print_board(count, current.depth);
+            thread::sleep(Duration::from_millis(1000));
             if current.is_goal_state() {
                 final_result = current;
                 break;
