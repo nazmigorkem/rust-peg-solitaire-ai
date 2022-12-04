@@ -3,7 +3,7 @@ use super::Board;
 pub trait DFSWithHeuristic {
     fn solve_dfs_with_heuristic(&self);
     fn calculate_heuristic_value(&self) -> u8;
-    fn generate_possible_moves_with_heuristic(&self) -> Vec<Board>;
+    // fn generate_possible_moves_with_heuristic(&self) -> Vec<Board>;
 }
 pub trait DFS {
     fn solve_dfs(&self, is_random: bool);

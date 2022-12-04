@@ -10,9 +10,7 @@ impl IterativeDeepining for Board {
         let mut current_limit = 1;
         'main: while current_limit <= depth_limit {
             let mut frontier_list: VecDeque<Board> = VecDeque::new();
-            self.generate_possible_moves(false)
-                .iter()
-                .for_each(|x| frontier_list.push_back(x.clone()));
+            self.generate_possible_moves(false, &mut frontier_list);
             while !frontier_list.is_empty() {
                 count += 1;
 
@@ -25,11 +23,7 @@ impl IterativeDeepining for Board {
                     break 'main;
                 }
 
-                current.generate_possible_moves(false).iter().for_each(|x| {
-                    if x.depth <= current_limit {
-                        frontier_list.push_back(x.clone())
-                    }
-                });
+                current.generate_possible_moves(false, &mut frontier_list);
             }
             current_limit += 1;
         }

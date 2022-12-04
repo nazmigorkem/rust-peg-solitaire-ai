@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 
 use rand::{seq::SliceRandom, thread_rng};
 
@@ -30,28 +30,8 @@ impl Board {
         }
     }
 
-    pub fn print_board(&self, iteration_count: u64, depth: usize) {
-        let mut board: Vec<Vec<&str>> = vec![vec!["- "; 7]; 7];
-        println!("{} {}", iteration_count, depth);
-        for i in self.pegs.iter() {
-            board[i.0 as usize][i.1 as usize] = "o ";
-        }
-        for i in self.empty_holes.iter() {
-            board[i.0 as usize][i.1 as usize] = "  ";
-        }
-
-        for i in board {
-            for j in i {
-                print!("{}", j);
-            }
-            print!("\n");
-        }
-        print!("\x1b[8F");
-    }
-
-    pub fn generate_possible_moves(&self, is_random: bool) -> Vec<Board> {
-        let mut outcome: Vec<Board> = Vec::new();
-        let current_empty_holes = self.empty_holes.clone();
+    pub fn generate_possible_moves(&self, is_random: bool, frontier_list: &mut VecDeque<Board>) {
+        let current_empty_holes = &self.empty_holes;
         let mut indexes: Vec<usize> = (0..current_empty_holes.len()).collect();
         if is_random {
             indexes.shuffle(&mut thread_rng());
@@ -76,7 +56,7 @@ impl Board {
                     direction = false;
                 }
                 if is_ok {
-                    outcome.push(Board::apply_moves(
+                    frontier_list.push_back(Board::apply_moves(
                         self.pegs.clone(),
                         self.empty_holes.clone(),
                         i as i16,
@@ -89,7 +69,6 @@ impl Board {
                 }
             }
         }
-        outcome
     }
 
     pub fn apply_moves(
@@ -102,8 +81,8 @@ impl Board {
         new_depth: usize,
         empty_peg_index: usize,
     ) -> Board {
-        let mut new_pegs = pegs.clone();
-        let mut new_empty_holes = empty_holes.clone();
+        let mut new_pegs = pegs;
+        let mut new_empty_holes = empty_holes;
         let died_peg_position: (u8, u8);
         let murderer_peg_position: (u8, u8);
         if is_vertical {
@@ -137,5 +116,24 @@ impl Board {
         }
 
         true
+    }
+
+    pub fn print_board(&self, iteration_count: u64, depth: usize) {
+        let mut board: Vec<Vec<&str>> = vec![vec!["- "; 7]; 7];
+        println!("{} {}", iteration_count, depth);
+        for i in self.pegs.iter() {
+            board[i.0 as usize][i.1 as usize] = "o ";
+        }
+        for i in self.empty_holes.iter() {
+            board[i.0 as usize][i.1 as usize] = "  ";
+        }
+
+        for i in board {
+            for j in i {
+                print!("{}", j);
+            }
+            print!("\n");
+        }
+        print!("\x1b[8F");
     }
 }

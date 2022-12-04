@@ -1,7 +1,7 @@
 mod algorithm;
 mod solitaire;
 
-use std::io;
+use std::{collections::VecDeque, io};
 
 use solitaire::enums::DFSWithHeuristic;
 
@@ -21,7 +21,9 @@ fn main() {
         io::stdin()
             .read_line(&mut selection)
             .expect("Failed to read line");
-        let initial_state = &board.generate_possible_moves(false)[0];
+        let mut initial_frontier: VecDeque<Board> = VecDeque::new();
+        board.generate_possible_moves(false, &mut initial_frontier);
+        let initial_state = initial_frontier.pop_front().unwrap();
         match selection.trim() {
             "a" => {
                 initial_state.solve_bfs();
@@ -39,7 +41,7 @@ fn main() {
                 initial_state.solve_dfs_with_heuristic();
             }
             "f" => {
-                println!("Exitting from program.");
+                println!("Exitting from the program.");
                 break;
             }
             _ => {}
