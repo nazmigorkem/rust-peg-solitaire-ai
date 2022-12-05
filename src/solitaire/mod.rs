@@ -23,15 +23,15 @@ impl Board {
     pub fn generate_possible_moves(&self, is_random: bool, frontier_list: &mut VecDeque<Board>) {
         for (i, j) in self.pegs.iter() {
             for length in [-2, 2] {
-                let peg_will_move_to = ((*i as i16 + length) as u8, *j);
-                let peg_will_murder = ((*i as i16 + length / 2) as u8, *j);
+                let peg_will_move_to = ((*i as i8 + length) as u8, *j);
+                let peg_will_murder = ((*i as i8 + length / 2) as u8, *j);
                 if !Board::is_out_of_bounds(peg_will_move_to)
                     && !self.pegs.contains(&peg_will_move_to) 
                     && self.pegs.contains(&peg_will_murder) {
-                    self.apply_moves((i, j), peg_will_murder, peg_will_move_to, frontier_list);
+                        self.apply_moves((i, j), peg_will_murder, peg_will_move_to, frontier_list);
                 }
-                let peg_will_move_to = (*i, (*j as i16 + length) as u8);
-                let peg_will_murder = (*i, (*j as i16 + length / 2) as u8);
+                let peg_will_move_to = (*i, (*j as i8 + length) as u8);
+                let peg_will_murder = (*i, (*j as i8 + length / 2) as u8);
                 if !Board::is_out_of_bounds(peg_will_move_to) &&
                     !self.pegs.contains(&peg_will_move_to) 
                     && self.pegs.contains(&peg_will_murder) {
@@ -71,12 +71,16 @@ impl Board {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         println!("{} {}", iteration_count, depth);
         for i in self.pegs.iter() {
-            board[i.0 as usize][i.1 as usize] = "o "
+                board[i.0 as usize][i.1 as usize] = "o "
         }
 
-        for i in board {
-            for j in i {
-                print!("{}", j);
+        for i in board.iter().enumerate() {
+            for j in i.1.iter().enumerate() {
+                if Board::is_out_of_bounds((i.0 as u8, j.0 as u8)) {
+                    print!("- ");
+                } else {
+                    print!("{}", j.1);
+                }
             }
             print!("\n");
         }

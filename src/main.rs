@@ -14,9 +14,10 @@ fn main() {
     println!(
         "Select one of the methods from a to e:\na) Breadth-First Search\nb) Depth-First Search\nc) Iterative Deepening Search\nd) Depth-First Search with Random Selection\ne) Depth-First Search with a Node Selection Heuristic\nf) Exit"
     );
-    loop {
+    let mut is_true = false;
+    while !is_true {
         let mut selection = String::new();
-
+        is_true = true;
         io::stdin()
             .read_line(&mut selection)
             .expect("Failed to read line");
@@ -43,7 +44,9 @@ fn main() {
                 println!("Exitting from the program.");
                 break;
             }
-            _ => {}
+            _ => {
+                is_true = false;
+            }
         }
     }
 }
