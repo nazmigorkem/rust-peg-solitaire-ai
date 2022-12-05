@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, thread, time::Duration};
+use std::collections::VecDeque;
 
 use crate::solitaire::{enums::DFS, Board};
 
@@ -13,11 +13,10 @@ impl DFS for Board {
             count += 1;
 
             let current = frontier_list.pop_back().unwrap();
-            if count % 1_000_000 == 0 {
+            if count % 10_000_000 == 0 {
                 best_move.print_board(count, best_move.depth, true);
             }
-            // current.print_board(0, 0, true);
-            // thread::sleep(Duration::from_secs(1));
+
             if best_move.depth <= current.depth {
                 best_move = current.clone();
                 final_result = current.clone();

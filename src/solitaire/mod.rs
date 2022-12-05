@@ -5,7 +5,7 @@ pub mod enums;
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
     pub depth: usize,
-    pub parent: Box<Option<Board>>
+    pub parent: Box<Option<Board>>,
 }
 
 impl Board {
@@ -18,12 +18,15 @@ impl Board {
                 }
             }
         }
-        Board { pegs, depth: 0, parent: Box::new(None) }
+        Board {
+            pegs,
+            depth: 0,
+            parent: Box::new(None),
+        }
     }
 
     pub fn generate_possible_moves(&self, is_random: bool, frontier_list: &mut VecDeque<Board>) {
         for (i, j) in self.pegs.iter().rev() {
-
             let left_peg = (*i, *j - 1);
             let right_peg = (*i, *j + 1);
             if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
@@ -51,14 +54,18 @@ impl Board {
                     } else {
                         self.apply_moves((i, j), bottom_peg, upper_peg, frontier_list)
                     }
-                }            
+                }
             }
-
-            
         }
     }
 
-    pub fn apply_moves(&self, (i, j): (&u8, &u8), peg_will_murder: (u8, u8), peg_will_move_to: (u8, u8), frontier_list: &mut VecDeque<Board>) {
+    pub fn apply_moves(
+        &self,
+        (i, j): (&u8, &u8),
+        peg_will_murder: (u8, u8),
+        peg_will_move_to: (u8, u8),
+        frontier_list: &mut VecDeque<Board>,
+    ) {
         let mut new_pegs = self.pegs.clone();
         let new_depth = self.depth + 1;
         new_pegs.remove(&(*i, *j));
@@ -66,13 +73,13 @@ impl Board {
         new_pegs.insert(peg_will_move_to);
         frontier_list.push_back(Board {
             pegs: new_pegs,
-            depth: self.depth + 1,
-            parent: Box::new(Some(Board { pegs: self.pegs.clone(), depth: new_depth, parent: self.parent.clone() }))
+            depth: new_depth,
+            parent: Box::new(None),
         })
     }
 
     pub fn is_out_of_bounds((i, j): (u8, u8)) -> bool {
-        return (i < 2 || i > 4) && (j < 2 || j > 4) || i > 6 || j > 6
+        return (i < 2 || i > 4) && (j < 2 || j > 4) || i > 6 || j > 6;
     }
 
     pub fn is_goal_state(&self) -> bool {
@@ -87,7 +94,7 @@ impl Board {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         println!("{} {}", iteration_count, depth);
         for i in self.pegs.iter() {
-                board[i.0 as usize][i.1 as usize] = "o "
+            board[i.0 as usize][i.1 as usize] = "o "
         }
 
         for i in board.iter().enumerate() {
