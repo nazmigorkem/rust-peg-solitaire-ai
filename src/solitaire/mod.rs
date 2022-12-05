@@ -5,6 +5,7 @@ pub mod enums;
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
     pub depth: usize,
+    pub parent: Box<Option<Board>>
 }
 
 impl Board {
@@ -17,39 +18,57 @@ impl Board {
                 }
             }
         }
-        Board { pegs, depth: 0 }
+        Board { pegs, depth: 0, parent: Box::new(None) }
     }
 
     pub fn generate_possible_moves(&self, is_random: bool, frontier_list: &mut VecDeque<Board>) {
-        for (i, j) in self.pegs.iter() {
-            for length in [-2, 2] {
-                let peg_will_move_to = ((*i as i8 + length) as u8, *j);
-                let peg_will_murder = ((*i as i8 + length / 2) as u8, *j);
-                if !Board::is_out_of_bounds(peg_will_move_to)
-                    && !self.pegs.contains(&peg_will_move_to) 
-                    && self.pegs.contains(&peg_will_murder) {
-                        self.apply_moves((i, j), peg_will_murder, peg_will_move_to, frontier_list);
-                }
-                let peg_will_move_to = (*i, (*j as i8 + length) as u8);
-                let peg_will_murder = (*i, (*j as i8 + length / 2) as u8);
-                if !Board::is_out_of_bounds(peg_will_move_to) &&
-                    !self.pegs.contains(&peg_will_move_to) 
-                    && self.pegs.contains(&peg_will_murder) {
-                        self.apply_moves((i, j), peg_will_murder, peg_will_move_to, frontier_list);
+        for (i, j) in self.pegs.iter().rev() {
+
+            let left_peg = (*i, *j - 1);
+            let right_peg = (*i, *j + 1);
+            if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
+                let left_peg_contain = self.pegs.contains(&left_peg);
+                let right_peg_contain = self.pegs.contains(&right_peg);
+
+                if left_peg_contain ^ right_peg_contain {
+                    if left_peg_contain {
+                        self.apply_moves((i, j), left_peg, right_peg, frontier_list);
+                    } else {
+                        self.apply_moves((i, j), right_peg, left_peg, frontier_list);
+                    }
                 }
             }
+
+            let upper_peg = (*i - 1, *j);
+            let bottom_peg = (*i + 1, *j);
+            if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
+                let is_upper_peg = self.pegs.contains(&upper_peg);
+                let is_bottom_peg = self.pegs.contains(&bottom_peg);
+
+                if is_upper_peg ^ is_bottom_peg {
+                    if is_upper_peg {
+                        self.apply_moves((i, j), upper_peg, bottom_peg, frontier_list)
+                    } else {
+                        self.apply_moves((i, j), bottom_peg, upper_peg, frontier_list)
+                    }
+                }            
+            }
+
+            
         }
     }
 
     pub fn apply_moves(&self, (i, j): (&u8, &u8), peg_will_murder: (u8, u8), peg_will_move_to: (u8, u8), frontier_list: &mut VecDeque<Board>) {
         let mut new_pegs = self.pegs.clone();
-                    new_pegs.remove(&(*i, *j));
-                    new_pegs.remove(&peg_will_murder);
-                    new_pegs.insert(peg_will_move_to);
-                    frontier_list.push_back(Board {
-                        pegs: new_pegs,
-                        depth: self.depth + 1
-                    })
+        let new_depth = self.depth + 1;
+        new_pegs.remove(&(*i, *j));
+        new_pegs.remove(&peg_will_murder);
+        new_pegs.insert(peg_will_move_to);
+        frontier_list.push_back(Board {
+            pegs: new_pegs,
+            depth: self.depth + 1,
+            parent: Box::new(Some(Board { pegs: self.pegs.clone(), depth: new_depth, parent: self.parent.clone() }))
+        })
     }
 
     pub fn is_out_of_bounds((i, j): (u8, u8)) -> bool {
@@ -57,17 +76,14 @@ impl Board {
     }
 
     pub fn is_goal_state(&self) -> bool {
-        if self.pegs.len() != 1 {
-            return false;
-        }
-        if self.pegs.get(&(3, 3)).is_none() {
+        if self.pegs.len() != 1 || self.pegs.get(&(3, 3)).is_none() {
             return false;
         }
 
         true
     }
 
-    pub fn print_board(&self, iteration_count: u64, depth: usize) {
+    pub fn print_board(&self, iteration_count: u64, depth: usize, clear: bool) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         println!("{} {}", iteration_count, depth);
         for i in self.pegs.iter() {
@@ -84,6 +100,8 @@ impl Board {
             }
             print!("\n");
         }
-        print!("\x1b[8F");
+        if clear {
+            print!("\x1b[8F");
+        }
     }
 }

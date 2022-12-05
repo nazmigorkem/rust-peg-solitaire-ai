@@ -13,7 +13,7 @@ impl BFS for Board {
 
             let current = frontier_list.pop_front().unwrap();
             if count % 50_000 == 0 {
-                current.print_board(count, current.depth);
+                current.print_board(count, current.depth, true);
             }
             if current.is_goal_state() {
                 final_result = current;
@@ -22,6 +22,6 @@ impl BFS for Board {
 
             current.generate_possible_moves(false, &mut frontier_list);
         }
-        final_result.print_board(count, final_result.depth);
+        final_result.print_board(count, final_result.depth, true);
     }
 }

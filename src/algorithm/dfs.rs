@@ -14,8 +14,10 @@ impl DFS for Board {
 
             let current = frontier_list.pop_back().unwrap();
             if count % 1_000_000 == 0 {
-                best_move.print_board(count, best_move.depth);
+                best_move.print_board(count, best_move.depth, true);
             }
+            // current.print_board(0, 0, true);
+            // thread::sleep(Duration::from_secs(1));
             if best_move.depth <= current.depth {
                 best_move = current.clone();
                 final_result = current.clone();
@@ -26,6 +28,11 @@ impl DFS for Board {
             }
             current.generate_possible_moves(is_random, &mut frontier_list);
         }
-        final_result.print_board(count, final_result.depth);
+        println!("Total iteration = {}", count);
+        while !final_result.parent.is_none() {
+            final_result.print_board(0, final_result.depth, false);
+            final_result = final_result.parent.unwrap();
+        }
+        final_result.print_board(0, final_result.depth, false);
     }
 }

@@ -23,7 +23,7 @@ fn main() {
             .expect("Failed to read line");
         let mut initial_frontier: VecDeque<Board> = VecDeque::new();
         board.generate_possible_moves(false, &mut initial_frontier);
-        let initial_state = initial_frontier.pop_front().unwrap();
+        let initial_state = initial_frontier.pop_back().unwrap();
         match selection.trim() {
             "a" => {
                 initial_state.solve_bfs();

@@ -26,7 +26,7 @@ impl DFSWithHeuristic for Board {
 
             let current = frontier_list.pop_back().unwrap();
             if count % 50_000 == 0 {
-                current.print_board(count, current.depth);
+                current.print_board(count, current.depth, true);
             }
             if current.is_goal_state() {
                 final_result = current;
@@ -38,6 +38,6 @@ impl DFSWithHeuristic for Board {
             //     .iter()
             //     .for_each(|x| frontier_list.push_back(x.clone()));
         }
-        final_result.print_board(count, final_result.depth);
+        final_result.print_board(count, final_result.depth, true);
     }
 }
