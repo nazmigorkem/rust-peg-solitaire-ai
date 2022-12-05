@@ -12,7 +12,7 @@ impl DFS for Board {
             count += 1;
 
             let current = frontier_list.pop_back().unwrap();
-            if count % 50_000 == 0 {
+            if count % 1_000_000 == 0 {
                 current.print_board(count, current.depth);
             }
             if current.is_goal_state() {
