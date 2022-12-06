@@ -1,5 +1,4 @@
 use std::{
-    cell::{Ref, RefCell},
     collections::{BTreeSet, VecDeque},
     rc::Rc,
 };
@@ -31,7 +30,7 @@ impl Board {
 
     pub fn generate_possible_moves(
         &self,
-        is_random: bool,
+        _is_random: bool,
         frontier_list: &mut VecDeque<Rc<Board>>,
     ) {
         for (i, j) in self.pegs.iter().rev() {

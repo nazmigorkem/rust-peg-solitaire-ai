@@ -1,5 +1,3 @@
-use super::Board;
-
 pub trait DFSWithHeuristic {
     fn solve_dfs_with_heuristic(&self);
     fn calculate_heuristic_value(&self) -> u8;

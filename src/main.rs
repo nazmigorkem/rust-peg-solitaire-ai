@@ -1,7 +1,7 @@
 mod algorithm;
 mod solitaire;
 
-use std::{collections::VecDeque, io, rc::Rc};
+use std::io;
 
 use crate::solitaire::enums::DFS;
 
