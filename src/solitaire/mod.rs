@@ -1,9 +1,8 @@
 use std::{
-    collections::{BTreeSet, VecDeque},
+    collections::{BTreeSet, LinkedList, VecDeque},
     rc::Rc,
 };
 
-pub mod enums;
 #[derive(Debug, Clone)]
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
@@ -31,24 +30,9 @@ impl Board {
     pub fn generate_possible_moves(
         &self,
         _is_random: bool,
-        frontier_list: &mut VecDeque<Rc<Board>>,
+        frontier_list: &mut LinkedList<Rc<Board>>,
     ) {
         for (i, j) in self.pegs.iter().rev() {
-            let upper_peg = (*i - 1, *j);
-            let bottom_peg = (*i + 1, *j);
-            if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
-                let is_upper_peg = self.pegs.contains(&upper_peg);
-                let is_bottom_peg = self.pegs.contains(&bottom_peg);
-
-                if is_upper_peg ^ is_bottom_peg {
-                    if is_upper_peg {
-                        self.apply_moves((i, j), upper_peg, bottom_peg, frontier_list)
-                    } else {
-                        self.apply_moves((i, j), bottom_peg, upper_peg, frontier_list)
-                    }
-                }
-            }
-
             let left_peg = (*i, *j - 1);
             let right_peg = (*i, *j + 1);
             if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
@@ -63,7 +47,38 @@ impl Board {
                     }
                 }
             }
+
+            let upper_peg = (*i - 1, *j);
+            let bottom_peg = (*i + 1, *j);
+            if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
+                let is_upper_peg = self.pegs.contains(&upper_peg);
+                let is_bottom_peg = self.pegs.contains(&bottom_peg);
+
+                if is_upper_peg ^ is_bottom_peg {
+                    if is_upper_peg {
+                        self.apply_moves((i, j), upper_peg, bottom_peg, frontier_list)
+                    } else {
+                        self.apply_moves((i, j), bottom_peg, upper_peg, frontier_list)
+                    }
+                }
+            }
         }
+    }
+
+    pub fn generate_possible_moves_with_heuristic(
+        &self,
+        frontier_list: &mut LinkedList<Rc<Board>>,
+    ) {
+    }
+
+    pub fn calculate_heuristic_value(&self) -> u8 {
+        let mut result = 0;
+        for (i, j) in self.pegs.iter() {
+            result += if *i > 3 { 3 - *i } else { *i - 3 };
+            result += if *j > 3 { 3 - *j } else { *j - 3 };
+        }
+
+        result
     }
 
     pub fn apply_moves(
@@ -71,7 +86,7 @@ impl Board {
         (i, j): (&u8, &u8),
         peg_will_murder: (u8, u8),
         peg_will_move_to: (u8, u8),
-        frontier_list: &mut VecDeque<Rc<Board>>,
+        frontier_list: &mut LinkedList<Rc<Board>>,
     ) {
         let mut new_pegs = self.pegs.clone();
         let new_depth = self.depth + 1;
