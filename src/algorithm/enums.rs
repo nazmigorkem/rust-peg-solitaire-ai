@@ -1,4 +1,4 @@
-use crate::solitaire::Board;
+use crate::peg_solitaire::Board;
 
 #[derive(PartialEq)]
 pub enum Method {

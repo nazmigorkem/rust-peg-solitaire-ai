@@ -1,11 +1,11 @@
 mod algorithm;
-mod solitaire;
+mod peg_solitaire;
 
 use std::io;
 
 use crate::algorithm::enums::{Algorithm, FrontierType, Method};
 
-use self::solitaire::Board;
+use self::peg_solitaire::Board;
 
 fn main() {
     let board = Board::new();

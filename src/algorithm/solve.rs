@@ -1,6 +1,6 @@
 use std::{collections::LinkedList, rc::Rc};
 
-use crate::solitaire::Board;
+use crate::peg_solitaire::Board;
 
 use super::enums::{Algorithm, FrontierType, Method};
 
