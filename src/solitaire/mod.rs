@@ -6,7 +6,7 @@ use std::{
 #[derive(Debug, Clone)]
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
-    pub depth: usize,
+    pub depth: u8,
     pub parent: Option<Rc<Self>>,
 }
 
@@ -65,22 +65,6 @@ impl Board {
         }
     }
 
-    pub fn generate_possible_moves_with_heuristic(
-        &self,
-        frontier_list: &mut LinkedList<Rc<Board>>,
-    ) {
-    }
-
-    pub fn calculate_heuristic_value(&self) -> u8 {
-        let mut result = 0;
-        for (i, j) in self.pegs.iter() {
-            result += if *i > 3 { 3 - *i } else { *i - 3 };
-            result += if *j > 3 { 3 - *j } else { *j - 3 };
-        }
-
-        result
-    }
-
     pub fn apply_moves(
         &self,
         (i, j): (&u8, &u8),
@@ -100,6 +84,22 @@ impl Board {
         }))
     }
 
+    pub fn generate_possible_moves_with_heuristic(
+        &self,
+        frontier_list: &mut LinkedList<Rc<Board>>,
+    ) {
+    }
+
+    pub fn calculate_heuristic_value(&self) -> u8 {
+        let mut result = 0;
+        for (i, j) in self.pegs.iter() {
+            result += if *i > 3 { 3 - *i } else { *i - 3 };
+            result += if *j > 3 { 3 - *j } else { *j - 3 };
+        }
+
+        result
+    }
+
     pub fn is_out_of_bounds((i, j): (u8, u8)) -> bool {
         return (i < 2 || i > 4) && (j < 2 || j > 4) || i > 6 || j > 6;
     }
@@ -112,7 +112,7 @@ impl Board {
         true
     }
 
-    pub fn print_board(&self, iteration_count: u64, depth: usize, clear: bool) {
+    pub fn print_board(&self, iteration_count: u64, depth: u8, clear: bool) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         println!("{} {}", iteration_count, depth);
         for i in self.pegs.iter() {

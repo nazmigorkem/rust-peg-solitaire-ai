@@ -28,7 +28,7 @@ fn main() {
                 board.solve(FrontierType::Stack, Method::Ordered, 32);
             }
             "c" => {
-                // board.solve_iterative_deepening();
+                board.solve(FrontierType::Stack, Method::Ordered, 1);
             }
             "d" => {
                 board.solve(FrontierType::Stack, Method::Random, 32);

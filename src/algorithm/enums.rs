@@ -14,7 +14,7 @@ pub enum FrontierType {
 }
 
 pub trait Algorithm {
-    fn solve(&self, frontier_type: FrontierType, method: Method, depth_linit: u8);
+    fn solve(&self, frontier_type: FrontierType, method: Method, initial_depth_limit: u8);
 }
 
 pub trait BFS {
