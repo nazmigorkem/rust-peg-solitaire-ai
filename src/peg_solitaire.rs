@@ -73,11 +73,9 @@ impl Board {
         }
 
         match method {
+            Method::Ordered => (),
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
-            Method::Ordered => {}
-            Method::Heuristic => {
-                outcome_list.sort();
-            }
+            Method::Heuristic => outcome_list.sort(),
         }
         for state in outcome_list {
             frontier_list.push_back(state);
