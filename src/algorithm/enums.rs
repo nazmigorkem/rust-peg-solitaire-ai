@@ -23,8 +23,7 @@ pub trait BFS {
 
 impl Ord for Board {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.calculate_heuristic_value()
-            .cmp(&other.calculate_heuristic_value())
+        self.heuristic_value.cmp(&other.heuristic_value)
     }
 }
 
@@ -36,7 +35,7 @@ impl PartialOrd for Board {
 
 impl PartialEq for Board {
     fn eq(&self, other: &Self) -> bool {
-        self.calculate_heuristic_value() == other.calculate_heuristic_value()
+        self.heuristic_value == other.heuristic_value
     }
 }
 

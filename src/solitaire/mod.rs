@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, LinkedList, VecDeque},
+    collections::{BTreeSet, LinkedList},
     rc::Rc,
 };
 
@@ -7,6 +7,7 @@ use std::{
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
     pub depth: u8,
+    pub heuristic_value: u8,
     pub parent: Option<Rc<Self>>,
 }
 
@@ -20,10 +21,12 @@ impl Board {
                 }
             }
         }
+        let heuristic_value = Board::calculate_heuristic_value(&pegs);
         Board {
             pegs,
             depth: 0,
             parent: None,
+            heuristic_value,
         }
     }
 
@@ -77,10 +80,12 @@ impl Board {
         new_pegs.remove(&(*i, *j));
         new_pegs.remove(&peg_will_murder);
         new_pegs.insert(peg_will_move_to);
+        let heuristic_value = Board::calculate_heuristic_value(&new_pegs);
         frontier_list.push_back(Rc::new(Board {
             pegs: new_pegs,
             depth: new_depth,
             parent: Some(Rc::new(self.clone())),
+            heuristic_value,
         }))
     }
 
@@ -90,9 +95,9 @@ impl Board {
     ) {
     }
 
-    pub fn calculate_heuristic_value(&self) -> u8 {
+    pub fn calculate_heuristic_value(pegs: &BTreeSet<(u8, u8)>) -> u8 {
         let mut result = 0;
-        for (i, j) in self.pegs.iter() {
+        for (i, j) in pegs.iter() {
             result += if *i > 3 { 3 - *i } else { *i - 3 };
             result += if *j > 3 { 3 - *j } else { *j - 3 };
         }
