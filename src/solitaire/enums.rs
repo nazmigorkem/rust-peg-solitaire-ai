@@ -13,27 +13,27 @@ pub trait IterativeDeepining {
     fn solve_iterative_deepening(&self);
 }
 
-pub trait BFS {
-    fn solve_bfs(&self);
-}
+// pub trait BFS {
+//     fn solve_bfs(&self);
+// }
 
-impl Ord for Board {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.calculate_heuristic_value()
-            .cmp(&other.calculate_heuristic_value())
-    }
-}
+// impl Ord for Board {
+//     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+//         self.calculate_heuristic_value()
+//             .cmp(&other.calculate_heuristic_value())
+//     }
+// }
 
-impl PartialOrd for Board {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
+// impl PartialOrd for Board {
+//     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+//         Some(self.cmp(other))
+//     }
+// }
 
-impl PartialEq for Board {
-    fn eq(&self, other: &Self) -> bool {
-        self.calculate_heuristic_value() == other.calculate_heuristic_value()
-    }
-}
+// impl PartialEq for Board {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.calculate_heuristic_value() == other.calculate_heuristic_value()
+//     }
+// }
 
-impl Eq for Board {}
+// impl Eq for Board {}

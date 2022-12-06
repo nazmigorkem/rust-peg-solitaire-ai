@@ -1,11 +1,15 @@
-use std::collections::{BTreeSet, VecDeque};
+use std::{
+    cell::{Ref, RefCell},
+    collections::{BTreeSet, VecDeque},
+    rc::Rc,
+};
 
 pub mod enums;
 #[derive(Debug, Clone)]
 pub struct Board {
     pub pegs: BTreeSet<(u8, u8)>,
     pub depth: usize,
-    pub parent: Box<Option<Board>>,
+    pub parent: Option<Rc<Self>>,
 }
 
 impl Board {
@@ -21,27 +25,16 @@ impl Board {
         Board {
             pegs,
             depth: 0,
-            parent: Box::new(None),
+            parent: None,
         }
     }
 
-    pub fn generate_possible_moves(&self, is_random: bool, frontier_list: &mut VecDeque<Board>) {
+    pub fn generate_possible_moves(
+        &self,
+        is_random: bool,
+        frontier_list: &mut VecDeque<Rc<Board>>,
+    ) {
         for (i, j) in self.pegs.iter().rev() {
-            let left_peg = (*i, *j - 1);
-            let right_peg = (*i, *j + 1);
-            if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
-                let left_peg_contain = self.pegs.contains(&left_peg);
-                let right_peg_contain = self.pegs.contains(&right_peg);
-
-                if left_peg_contain ^ right_peg_contain {
-                    if left_peg_contain {
-                        self.apply_moves((i, j), left_peg, right_peg, frontier_list);
-                    } else {
-                        self.apply_moves((i, j), right_peg, left_peg, frontier_list);
-                    }
-                }
-            }
-
             let upper_peg = (*i - 1, *j);
             let bottom_peg = (*i + 1, *j);
             if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
@@ -56,6 +49,21 @@ impl Board {
                     }
                 }
             }
+
+            let left_peg = (*i, *j - 1);
+            let right_peg = (*i, *j + 1);
+            if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
+                let left_peg_contain = self.pegs.contains(&left_peg);
+                let right_peg_contain = self.pegs.contains(&right_peg);
+
+                if left_peg_contain ^ right_peg_contain {
+                    if left_peg_contain {
+                        self.apply_moves((i, j), left_peg, right_peg, frontier_list);
+                    } else {
+                        self.apply_moves((i, j), right_peg, left_peg, frontier_list);
+                    }
+                }
+            }
         }
     }
 
@@ -64,18 +72,18 @@ impl Board {
         (i, j): (&u8, &u8),
         peg_will_murder: (u8, u8),
         peg_will_move_to: (u8, u8),
-        frontier_list: &mut VecDeque<Board>,
+        frontier_list: &mut VecDeque<Rc<Board>>,
     ) {
         let mut new_pegs = self.pegs.clone();
         let new_depth = self.depth + 1;
         new_pegs.remove(&(*i, *j));
         new_pegs.remove(&peg_will_murder);
         new_pegs.insert(peg_will_move_to);
-        frontier_list.push_back(Board {
+        frontier_list.push_back(Rc::new(Board {
             pegs: new_pegs,
             depth: new_depth,
-            parent: Box::new(None),
-        })
+            parent: Some(Rc::new(self.clone())),
+        }))
     }
 
     pub fn is_out_of_bounds((i, j): (u8, u8)) -> bool {
