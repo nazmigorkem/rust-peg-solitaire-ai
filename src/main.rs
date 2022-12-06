@@ -34,7 +34,7 @@ fn main() {
                 board.solve(FrontierType::Stack, Method::Random, 32);
             }
             "e" => {
-                // board.solve_dfs_with_heuristic();
+                board.solve(FrontierType::Stack, Method::Heuristic, 32);
             }
             "f" => {
                 println!("Exitting from the program.");

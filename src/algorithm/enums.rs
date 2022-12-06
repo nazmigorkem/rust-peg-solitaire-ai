@@ -23,7 +23,7 @@ pub trait BFS {
 
 impl Ord for Board {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.heuristic_value.cmp(&other.heuristic_value)
+        other.heuristic_value.cmp(&self.heuristic_value)
     }
 }
 
