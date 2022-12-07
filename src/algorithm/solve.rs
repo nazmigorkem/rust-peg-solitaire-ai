@@ -1,4 +1,8 @@
-use std::{collections::LinkedList, rc::Rc};
+use std::{
+    collections::LinkedList,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 use crate::peg_solitaire::Board;
 
@@ -9,13 +13,11 @@ impl Algorithm for Board {
         let is_queue = frontier_type == FrontierType::Queue;
         let mut final_result: Rc<Board> = Rc::new(Board::new());
         let mut count = 1;
-
+        let start = Instant::now();
         'outter: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
-
             let mut best_board: Rc<Board> = Rc::new(Board::new());
-            depth_limit += 1;
             while !frontier_list.is_empty() {
                 count += 1;
 
@@ -25,7 +27,7 @@ impl Algorithm for Board {
                     frontier_list.pop_back().unwrap()
                 };
                 if count % 1_000_000 == 0 {
-                    best_board.print_board(count, best_board.depth, true);
+                    best_board.print_board(count, best_board.depth, true, start.elapsed());
                 }
 
                 if best_board.depth <= current.depth {
@@ -36,15 +38,23 @@ impl Algorithm for Board {
                     final_result = current;
                     break 'outter;
                 }
-                current.generate_possible_moves(&method, &mut frontier_list);
+                if current.depth < depth_limit {
+                    current.generate_possible_moves(&method, &mut frontier_list);
+                }
             }
+            depth_limit += 1;
         }
         let mut iterator = final_result.parent.as_ref().unwrap();
+        let elapsed_time = start.elapsed();
+        let mut result_states: Vec<Rc<Board>> = Vec::new();
         while {
-            iterator.print_board(0, iterator.depth, false);
             iterator = iterator.parent.as_ref().unwrap();
+            result_states.push(iterator.to_owned());
             !iterator.parent.is_none()
         } {}
-        final_result.print_board(count, final_result.depth, false);
+        final_result.print_board(count, final_result.depth, false, elapsed_time);
+        for state in result_states {
+            state.print_board(0, state.depth, false, Duration::from_secs(0));
+        }
     }
 }

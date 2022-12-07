@@ -1,6 +1,7 @@
 use std::{
     collections::{BTreeSet, LinkedList},
     rc::Rc,
+    time::Duration,
 };
 
 use rand::{seq::SliceRandom, thread_rng};
@@ -127,9 +128,26 @@ impl Board {
         true
     }
 
-    pub fn print_board(&self, iteration_count: u64, depth: u8, clear: bool) {
+    pub fn print_board(
+        &self,
+        iteration_count: u64,
+        depth: u8,
+        clear: bool,
+        elapsed_time: Duration,
+    ) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
-        println!("{} {}", iteration_count, depth);
+        if iteration_count != 0 {
+            println!("Iteration Count: {}", iteration_count);
+        }
+        if !elapsed_time.is_zero() {
+            println!(
+                "Elapsed Time: {:?}.{:?}s",
+                elapsed_time.as_secs(),
+                elapsed_time.as_millis() % 1000
+            );
+        }
+        println!("Remaining Pegs: {}", 32 - depth);
+
         for i in self.pegs.iter() {
             board[i.0 as usize][i.1 as usize] = "o "
         }
@@ -145,7 +163,7 @@ impl Board {
             print!("\n");
         }
         if clear {
-            print!("\x1b[8F");
+            print!("\x1b[10F");
         }
     }
 }
