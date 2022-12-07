@@ -14,7 +14,7 @@ impl Algorithm for Board {
         let mut final_result: Rc<Board> = Rc::new(Board::new());
         let mut count = 1;
         let start = Instant::now();
-        'outter: while depth_limit < 33 {
+        'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
             let mut best_board: Rc<Board> = Rc::new(Board::new());
@@ -36,7 +36,7 @@ impl Algorithm for Board {
                 }
                 if current.is_goal_state() {
                     final_result = current;
-                    break 'outter;
+                    break 'outer;
                 }
                 if current.depth < depth_limit {
                     current.generate_possible_moves(&method, &mut frontier_list);
@@ -44,9 +44,9 @@ impl Algorithm for Board {
             }
             depth_limit += 1;
         }
-        let mut iterator = final_result.parent.as_ref().unwrap();
         let elapsed_time = start.elapsed();
-        let mut result_states: Vec<Rc<Board>> = Vec::new();
+        let mut iterator = final_result.as_ref();
+        let mut result_states: Vec<Board> = Vec::new();
         while {
             iterator = iterator.parent.as_ref().unwrap();
             result_states.push(iterator.to_owned());

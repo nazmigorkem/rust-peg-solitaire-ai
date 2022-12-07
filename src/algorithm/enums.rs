@@ -17,10 +17,6 @@ pub trait Algorithm {
     fn solve(&self, frontier_type: FrontierType, method: Method, initial_depth_limit: u8);
 }
 
-pub trait BFS {
-    fn solve_bfs(&self);
-}
-
 impl Ord for Board {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         other.heuristic_value.cmp(&self.heuristic_value)
