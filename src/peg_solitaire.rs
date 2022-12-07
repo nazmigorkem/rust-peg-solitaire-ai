@@ -134,6 +134,7 @@ impl Board {
         depth: u8,
         clear: bool,
         elapsed_time: Duration,
+        memory_usage: u64,
     ) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         if iteration_count != 0 {
@@ -144,6 +145,12 @@ impl Board {
                 "Elapsed Time: {:?}.{:?}s",
                 elapsed_time.as_secs(),
                 elapsed_time.as_millis() % 1000
+            );
+        }
+        if memory_usage != 0 {
+            println!(
+                "Memory Usage: {:.3?} MB",
+                (memory_usage as f64 / (1024. * 1024.))
             );
         }
         println!("Remaining Pegs: {}", 32 - depth);
@@ -163,7 +170,7 @@ impl Board {
             print!("\n");
         }
         if clear {
-            print!("\x1b[10F");
+            print!("\x1b[11F");
         }
     }
 }

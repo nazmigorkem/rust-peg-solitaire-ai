@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use psutil::process::Process;
+
 use crate::peg_solitaire::Board;
 
 use super::enums::{Algorithm, FrontierType, Method};
@@ -14,6 +16,9 @@ impl Algorithm for Board {
         let mut final_result: Rc<Board> = Rc::new(Board::new());
         let mut count = 1;
         let start = Instant::now();
+        let process = Process::current().unwrap();
+        let mut memory_usage_in_bytes: u64 = 0;
+
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
@@ -26,8 +31,21 @@ impl Algorithm for Board {
                 } else {
                     frontier_list.pop_back().unwrap()
                 };
+                if count % 50_000 == 0 {
+                    memory_usage_in_bytes = process.memory_info().unwrap().rss();
+                    if memory_usage_in_bytes > 1 << 33 {
+                        println!("Memory limit exceeded.");
+                        break 'outer;
+                    }
+                }
                 if count % 1_000_000 == 0 {
-                    best_board.print_board(count, best_board.depth, true, start.elapsed());
+                    best_board.print_board(
+                        count,
+                        best_board.depth,
+                        true,
+                        start.elapsed(),
+                        memory_usage_in_bytes,
+                    );
                 }
 
                 if best_board.depth <= current.depth {
@@ -52,9 +70,15 @@ impl Algorithm for Board {
             result_states.push(iterator.to_owned());
             !iterator.parent.is_none()
         } {}
-        final_result.print_board(count, final_result.depth, false, elapsed_time);
+        final_result.print_board(
+            count,
+            final_result.depth,
+            false,
+            elapsed_time,
+            memory_usage_in_bytes,
+        );
         for state in result_states {
-            state.print_board(0, state.depth, false, Duration::from_secs(0));
+            state.print_board(0, state.depth, false, Duration::from_secs(0), 0);
         }
     }
 }
