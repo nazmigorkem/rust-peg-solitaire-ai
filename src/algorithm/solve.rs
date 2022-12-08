@@ -24,30 +24,31 @@ impl Algorithm for Board {
         let start = Instant::now();
         let process = Process::current().unwrap();
         let mut memory_usage_in_bytes: u64 = 0;
-
+        let time_limit_in_seconds = time_limit * 60;
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
             let mut best_board: Rc<Board> = Rc::new(Board::new());
             while !frontier_list.is_empty() {
                 count += 1;
-
                 let current = if is_queue {
                     frontier_list.pop_front().unwrap()
                 } else {
                     frontier_list.pop_back().unwrap()
                 };
+
                 if count % 50_000 == 0 {
-                    memory_usage_in_bytes = process.memory_info().unwrap().rss();
+                    memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     if memory_usage_in_bytes > 1 << 33 {
                         println!("Memory limit exceeded.");
                         break 'outer;
                     }
-                    if time_limit * 60 < start.elapsed().as_secs() as u16 {
+                    if time_limit_in_seconds < start.elapsed().as_secs() as u16 {
                         println!("Time limit exceeded.");
                         break 'outer;
                     }
                 }
+
                 if count % 1_000_000 == 0 {
                     best_board.print_board(
                         count,
@@ -62,10 +63,12 @@ impl Algorithm for Board {
                     best_board = Rc::clone(&current);
                     final_result = Rc::clone(&current);
                 }
+
                 if current.is_goal_state() {
                     final_result = current;
                     break 'outer;
                 }
+
                 if current.depth < depth_limit {
                     current.generate_possible_moves(&method, &mut frontier_list);
                 }
