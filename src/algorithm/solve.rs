@@ -11,7 +11,13 @@ use crate::peg_solitaire::Board;
 use super::enums::{Algorithm, FrontierType, Method};
 
 impl Algorithm for Board {
-    fn solve(&self, frontier_type: FrontierType, method: Method, mut depth_limit: u8) {
+    fn solve(
+        &self,
+        frontier_type: FrontierType,
+        method: Method,
+        mut depth_limit: u8,
+        time_limit: u32,
+    ) {
         let is_queue = frontier_type == FrontierType::Queue;
         let mut final_result: Rc<Board> = Rc::new(Board::new());
         let mut count = 1;
@@ -35,6 +41,10 @@ impl Algorithm for Board {
                     memory_usage_in_bytes = process.memory_info().unwrap().rss();
                     if memory_usage_in_bytes > 1 << 33 {
                         println!("Memory limit exceeded.");
+                        break 'outer;
+                    }
+                    if time_limit * 60 < start.elapsed().as_secs() as u32 {
+                        println!("Time limit exceeded.");
                         break 'outer;
                     }
                 }
