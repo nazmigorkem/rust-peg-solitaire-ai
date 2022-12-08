@@ -16,7 +16,7 @@ impl Algorithm for Board {
         frontier_type: FrontierType,
         method: Method,
         mut depth_limit: u8,
-        time_limit: u32,
+        time_limit: u16,
     ) {
         let is_queue = frontier_type == FrontierType::Queue;
         let mut final_result: Rc<Board> = Rc::new(Board::new());
@@ -43,7 +43,7 @@ impl Algorithm for Board {
                         println!("Memory limit exceeded.");
                         break 'outer;
                     }
-                    if time_limit * 60 < start.elapsed().as_secs() as u32 {
+                    if time_limit * 60 < start.elapsed().as_secs() as u16 {
                         println!("Time limit exceeded.");
                         break 'outer;
                     }

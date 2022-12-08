@@ -19,7 +19,7 @@ pub trait Algorithm {
         frontier_type: FrontierType,
         method: Method,
         initial_depth_limit: u8,
-        time_limit: u32,
+        time_limit: u16,
     );
 }
 

@@ -29,7 +29,7 @@ fn main() {
                 search_algorithm = &arguments[i + 1][..];
             }
             "--time-limit" | "-t" => {
-                time_limit = match arguments[i + 1][..].parse::<u32>() {
+                time_limit = match arguments[i + 1][..].parse::<u16>() {
                     Ok(number) => number,
                     Err(_) => {
                         println!("Please provide valid time limit in minutes.");
