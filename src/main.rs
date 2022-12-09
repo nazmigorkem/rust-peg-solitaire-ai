@@ -15,7 +15,7 @@ fn main() {
         println!("Run the program via providing algorithm name and time limit in minutes.");
         return;
     }
-    let mut time_limit = 0;
+    let mut time_limit: f32 = 0.;
 
     let mut search_algorithm = "";
 
@@ -29,7 +29,7 @@ fn main() {
                 search_algorithm = &arguments[i + 1][..];
             }
             "--time-limit" | "-t" => {
-                time_limit = match arguments[i + 1][..].parse::<u16>() {
+                time_limit = match arguments[i + 1][..].parse::<f32>() {
                     Ok(number) => number,
                     Err(_) => {
                         println!("Please provide valid time limit in minutes.");

@@ -16,7 +16,7 @@ impl Algorithm for Board {
         frontier_type: FrontierType,
         method: Method,
         mut depth_limit: u8,
-        time_limit: u16,
+        time_limit: f32,
     ) {
         let is_queue = frontier_type == FrontierType::Queue;
         let mut final_result: Rc<Board> = Rc::new(Board::new());
@@ -24,7 +24,7 @@ impl Algorithm for Board {
         let start = Instant::now();
         let process = Process::current().unwrap();
         let mut memory_usage_in_bytes: u64 = 0;
-        let time_limit_in_seconds = time_limit * 60;
+        let time_limit_in_seconds = time_limit * 60.;
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
@@ -40,11 +40,11 @@ impl Algorithm for Board {
                 if count % 50_000 == 0 {
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     if memory_usage_in_bytes > 1 << 33 {
-                        println!("Memory limit exceeded.");
+                        println!("\x1B[2KMemory limit exceeded.");
                         break 'outer;
                     }
-                    if time_limit_in_seconds < start.elapsed().as_secs() as u16 {
-                        println!("Time limit exceeded.");
+                    if time_limit_in_seconds < start.elapsed().as_secs() as f32 {
+                        println!("\x1B[2KTime limit exceeded.");
                         break 'outer;
                     }
                 }
@@ -65,6 +65,7 @@ impl Algorithm for Board {
                 }
 
                 if current.is_goal_state() {
+                    memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     final_result = current;
                     break 'outer;
                 }
