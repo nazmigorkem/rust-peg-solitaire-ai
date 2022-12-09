@@ -1,6 +1,7 @@
 use std::{
     collections::LinkedList,
     rc::Rc,
+    thread,
     time::{Duration, Instant},
 };
 
@@ -16,7 +17,7 @@ impl Algorithm for Board {
         frontier_type: FrontierType,
         method: Method,
         mut depth_limit: u8,
-        time_limit: f32,
+        time_limit: u16,
     ) {
         let is_queue = frontier_type == FrontierType::Queue;
         let mut final_result: Rc<Board> = Rc::new(Board::new());
@@ -24,7 +25,10 @@ impl Algorithm for Board {
         let start = Instant::now();
         let process = Process::current().unwrap();
         let mut memory_usage_in_bytes: u64 = 0;
-        let time_limit_in_seconds = time_limit * 60.;
+        let time_limit_in_seconds = time_limit * 60;
+        let timing_thread = thread::spawn(move || {
+            thread::sleep(Duration::from_secs(time_limit_in_seconds as u64));
+        });
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
@@ -36,15 +40,14 @@ impl Algorithm for Board {
                 } else {
                     frontier_list.pop_back().unwrap()
                 };
-
+                if timing_thread.is_finished() {
+                    println!("\x1B[2KTime limit exceeded.");
+                    break 'outer;
+                }
                 if count % 50_000 == 0 {
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     if memory_usage_in_bytes > 1 << 33 {
                         println!("\x1B[2KMemory limit exceeded.");
-                        break 'outer;
-                    }
-                    if time_limit_in_seconds < start.elapsed().as_secs() as f32 {
-                        println!("\x1B[2KTime limit exceeded.");
                         break 'outer;
                     }
                 }
@@ -65,6 +68,7 @@ impl Algorithm for Board {
                 }
 
                 if current.is_goal_state() {
+                    println!("\x1B[2KFound goal state.");
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     final_result = current;
                     break 'outer;
@@ -79,20 +83,22 @@ impl Algorithm for Board {
         let elapsed_time = start.elapsed();
         let mut iterator = final_result.as_ref();
         let mut result_states: Vec<Board> = Vec::new();
+        result_states.push(final_result.as_ref().clone());
         while {
             iterator = iterator.parent.as_ref().unwrap();
             result_states.push(iterator.to_owned());
             !iterator.parent.is_none()
         } {}
-        final_result.print_board(
-            count,
-            final_result.depth,
-            false,
-            elapsed_time,
-            memory_usage_in_bytes,
-        );
-        for state in result_states {
-            state.print_board(0, state.depth, false, Duration::from_secs(0), 0);
+        for state in result_states.iter().rev() {
+            thread::sleep(Duration::from_millis(500));
+            state.print_board(
+                count,
+                state.depth,
+                true,
+                elapsed_time,
+                memory_usage_in_bytes,
+            );
         }
+        print!("\x1B[11B")
     }
 }
