@@ -21,6 +21,16 @@ pub trait Algorithm {
         initial_depth_limit: u8,
         time_limit: u16,
     );
+    fn get_full_name_of_algorithm(abbreviation: &str) -> &str {
+        match abbreviation {
+            "bfs" => "Breadth-First Search",
+            "dfs" => "Depth-First Search",
+            "iterative-dfs" => "Itrative Deepening Search",
+            "random-dfs" => "Depth-First Search with Random Selection",
+            "heuristic-dfs" => "Depth-First Search with a Node Selection Heuristic",
+            _ => "Not found",
+        }
+    }
 }
 
 impl Ord for Board {

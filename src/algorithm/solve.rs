@@ -41,13 +41,13 @@ impl Algorithm for Board {
                     frontier_list.pop_back().unwrap()
                 };
                 if timing_thread.is_finished() {
-                    println!("\x1B[2KTime limit exceeded.");
+                    println!("\x1B[2K\x1B[JTime limit exceeded.");
                     break 'outer;
                 }
                 if count % 50_000 == 0 {
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     if memory_usage_in_bytes > 1 << 33 {
-                        println!("\x1B[2KMemory limit exceeded.");
+                        println!("\x1B[2K\x1B[JMemory limit exceeded.");
                         break 'outer;
                     }
                 }
@@ -62,13 +62,13 @@ impl Algorithm for Board {
                     );
                 }
 
-                if best_board.depth <= current.depth {
+                if best_board.depth < current.depth {
                     best_board = Rc::clone(&current);
                     final_result = Rc::clone(&current);
                 }
 
                 if current.is_goal_state() {
-                    println!("\x1B[2KFound goal state.");
+                    println!("\x1B[2K\x1B[JFound goal state.");
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     final_result = current;
                     break 'outer;

@@ -1,7 +1,7 @@
 mod algorithm;
 mod peg_solitaire;
 
-use std::env::args;
+use std::{env::args, time::Duration};
 
 use crate::algorithm::enums::{Algorithm, FrontierType, Method};
 
@@ -40,7 +40,12 @@ fn main() {
             _ => {}
         }
     }
-
+    println!(
+        "Algorithm: {}",
+        Board::get_full_name_of_algorithm(search_algorithm)
+    );
+    board.print_board(0, 0, true, Duration::from_secs(0), 0);
+    print!("\n\n\n");
     match search_algorithm {
         "bfs" => {
             board.solve(FrontierType::Queue, Method::Ordered, 32, time_limit);
