@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     collections::{BTreeSet, LinkedList},
     rc::Rc,
     time::Duration,
@@ -14,6 +15,7 @@ pub struct Board {
     pub depth: u8,
     pub heuristic_value: u8,
     pub parent: Option<Rc<Self>>,
+    pub is_solution: RefCell<bool>,
 }
 
 impl Board {
@@ -32,6 +34,7 @@ impl Board {
             depth: 0,
             parent: None,
             heuristic_value,
+            is_solution: RefCell::new(false),
         }
     }
 
@@ -42,21 +45,6 @@ impl Board {
     ) {
         let mut outcome_list: Vec<Rc<Board>> = Vec::new();
         for (i, j) in self.pegs.iter().rev() {
-            let left_peg = (*i, *j - 1);
-            let right_peg = (*i, *j + 1);
-            if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
-                let left_peg_contain = self.pegs.contains(&left_peg);
-                let right_peg_contain = self.pegs.contains(&right_peg);
-
-                if left_peg_contain ^ right_peg_contain {
-                    if left_peg_contain {
-                        self.apply_moves((i, j), left_peg, right_peg, &mut outcome_list);
-                    } else {
-                        self.apply_moves((i, j), right_peg, left_peg, &mut outcome_list);
-                    }
-                }
-            }
-
             let upper_peg = (*i - 1, *j);
             let bottom_peg = (*i + 1, *j);
             if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
@@ -71,14 +59,32 @@ impl Board {
                     }
                 }
             }
+
+            let left_peg = (*i, *j - 1);
+            let right_peg = (*i, *j + 1);
+            if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
+                let left_peg_contain = self.pegs.contains(&left_peg);
+                let right_peg_contain = self.pegs.contains(&right_peg);
+
+                if left_peg_contain ^ right_peg_contain {
+                    if left_peg_contain {
+                        self.apply_moves((i, j), left_peg, right_peg, &mut outcome_list);
+                    } else {
+                        self.apply_moves((i, j), right_peg, left_peg, &mut outcome_list);
+                    }
+                }
+            }
         }
 
+        *self.is_solution.borrow_mut() = outcome_list.len() == 0;
+        if *self.is_solution.borrow() {
+            return;
+        }
         match method {
             Method::Ordered => (),
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
             Method::Heuristic => outcome_list.sort(),
         }
-
         for state in outcome_list {
             frontier_list.push_back(state);
         }
@@ -102,6 +108,7 @@ impl Board {
             depth: new_depth,
             parent: Some(Rc::new(self.clone())),
             heuristic_value,
+            is_solution: RefCell::new(false),
         }))
     }
 
@@ -155,6 +162,7 @@ impl Board {
             );
         }
         println!("\x1B[2KRemaining Pegs: {}", 32 - depth);
+        println!("\x1B[2KIs solution?: {}", self.is_solution.borrow());
 
         for i in self.pegs.iter() {
             board[i.0 as usize][i.1 as usize] = "o "
@@ -171,7 +179,7 @@ impl Board {
             print!("\n");
         }
         if clear {
-            print!("\x1b[11F");
+            print!("\x1b[12F");
         }
     }
 }

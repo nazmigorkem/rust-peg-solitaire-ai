@@ -40,6 +40,9 @@ impl Algorithm for Board {
                 } else {
                     frontier_list.pop_back().unwrap()
                 };
+                if current.depth < depth_limit {
+                    current.generate_possible_moves(&method, &mut frontier_list);
+                }
                 if timing_thread.is_finished() {
                     println!("\x1B[2K\x1B[JTime limit exceeded.");
                     break 'outer;
@@ -51,7 +54,6 @@ impl Algorithm for Board {
                         break 'outer;
                     }
                 }
-
                 if count % 1_000_000 == 0 {
                     best_board.print_board(
                         count,
@@ -61,21 +63,15 @@ impl Algorithm for Board {
                         memory_usage_in_bytes,
                     );
                 }
-
                 if best_board.depth < current.depth {
                     best_board = Rc::clone(&current);
                     final_result = Rc::clone(&current);
                 }
-
                 if current.is_goal_state() {
                     println!("\x1B[2K\x1B[JFound goal state.");
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
                     final_result = current;
                     break 'outer;
-                }
-
-                if current.depth < depth_limit {
-                    current.generate_possible_moves(&method, &mut frontier_list);
                 }
             }
             depth_limit += 1;
@@ -99,6 +95,6 @@ impl Algorithm for Board {
                 memory_usage_in_bytes,
             );
         }
-        print!("\x1B[11B")
+        print!("\x1B[12B")
     }
 }

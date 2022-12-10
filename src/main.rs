@@ -41,7 +41,10 @@ fn main() {
         }
     }
     let algorithm_name = Board::get_full_name_of_algorithm(search_algorithm);
-    println!("Algorithm: {}", algorithm_name);
+    println!(
+        "Algorithm: {}\nTime Limit In Minutes: {time_limit}",
+        algorithm_name
+    );
     if algorithm_name == "Not Found" {
         return;
     }
