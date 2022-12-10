@@ -28,7 +28,7 @@ pub trait Algorithm {
             "iterative-dfs" => "Itrative Deepening Search",
             "random-dfs" => "Depth-First Search with Random Selection",
             "heuristic-dfs" => "Depth-First Search with a Node Selection Heuristic",
-            _ => "Not found",
+            _ => "Not Found",
         }
     }
 }

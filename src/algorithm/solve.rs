@@ -26,13 +26,13 @@ impl Algorithm for Board {
         let process = Process::current().unwrap();
         let mut memory_usage_in_bytes: u64 = 0;
         let time_limit_in_seconds = time_limit * 60;
+        let mut best_board: Rc<Board> = Rc::new(Board::new());
         let timing_thread = thread::spawn(move || {
             thread::sleep(Duration::from_secs(time_limit_in_seconds as u64));
         });
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
-            let mut best_board: Rc<Board> = Rc::new(Board::new());
             while !frontier_list.is_empty() {
                 count += 1;
                 let current = if is_queue {

@@ -40,10 +40,11 @@ fn main() {
             _ => {}
         }
     }
-    println!(
-        "Algorithm: {}",
-        Board::get_full_name_of_algorithm(search_algorithm)
-    );
+    let algorithm_name = Board::get_full_name_of_algorithm(search_algorithm);
+    println!("Algorithm: {}", algorithm_name);
+    if algorithm_name == "Not Found" {
+        return;
+    }
     board.print_board(0, 0, true, Duration::from_secs(0), 0);
     print!("\n\n\n");
     match search_algorithm {

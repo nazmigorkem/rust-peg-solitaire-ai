@@ -78,6 +78,7 @@ impl Board {
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
             Method::Heuristic => outcome_list.sort(),
         }
+
         for state in outcome_list {
             frontier_list.push_back(state);
         }
@@ -138,7 +139,7 @@ impl Board {
     ) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         if iteration_count != 0 {
-            println!("\x1B[2KIteration Count: {}", iteration_count);
+            println!("\x1B[2KNumber of Nodes Expanded: {}", iteration_count);
         }
         if !elapsed_time.is_zero() {
             println!(
