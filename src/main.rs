@@ -41,9 +41,13 @@ fn main() {
         }
     }
     let algorithm_name = Board::get_full_name_of_algorithm(search_algorithm);
+    let algorithm_name_length = algorithm_name.len();
+    let time_limit_information_string = format!("Time limit is {time_limit} minute(s).");
+    let time_limit_information_length = time_limit_information_string.len();
+    let width = std::cmp::max(algorithm_name_length, time_limit_information_length);
     println!(
-        "Algorithm: {}\nTime Limit In Minutes: {time_limit}",
-        algorithm_name
+        "{:=<width$}\n{}\n{}\n{:=<width$}",
+        "=", algorithm_name, time_limit_information_string, "=",
     );
     if algorithm_name == "Not Found" {
         return;

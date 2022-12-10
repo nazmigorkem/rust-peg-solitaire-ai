@@ -146,23 +146,22 @@ impl Board {
     ) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         if iteration_count != 0 {
-            println!("\x1B[2KNumber of Nodes Expanded: {}", iteration_count);
+            println!("\x1B[2KNodes Expanded: {:>12}", iteration_count);
         }
         if !elapsed_time.is_zero() {
             println!(
-                "\x1B[2KElapsed Time: {:?}.{:?}s",
-                elapsed_time.as_secs(),
-                elapsed_time.as_millis() % 1000
+                "\x1B[2KElapsed Time: {:>13.3?}s",
+                elapsed_time.as_secs_f32()
             );
         }
         if memory_usage != 0 {
             println!(
-                "\x1B[2KMemory Usage: {:.3?} MB",
+                "\x1B[2KMemory Usage: {:>11.3?} MB",
                 (memory_usage as f64 / (1024. * 1024.))
             );
         }
-        println!("\x1B[2KRemaining Pegs: {}", 32 - depth);
-        println!("\x1B[2KIs solution?: {}", self.is_solution.borrow());
+        println!("\x1B[2KRemaining Pegs: {:>12}", 32 - depth);
+        println!("\x1B[2KIs solution?: {:>14}", self.is_solution.borrow());
 
         for i in self.pegs.iter() {
             board[i.0 as usize][i.1 as usize] = "o "
