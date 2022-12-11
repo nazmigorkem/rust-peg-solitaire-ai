@@ -52,8 +52,7 @@ fn main() {
     if algorithm_name == "Not Found" {
         return;
     }
-    board.print_board(0, 0, true, Duration::from_secs(0), 0, 0);
-    print!("\n\n\n\n");
+    board.print_board(0, 0, true, Duration::from_secs(0), 0, 0, false);
     match search_algorithm {
         "bfs" => {
             board.solve(FrontierType::Queue, Method::Ordered, 32, time_limit);

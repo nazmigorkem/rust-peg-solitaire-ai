@@ -65,6 +65,7 @@ impl Algorithm for Board {
                         start.elapsed(),
                         memory_usage_in_bytes,
                         frontier_list_max_size,
+                        true,
                     );
                 }
                 if best_board.depth < current.depth {
@@ -132,11 +133,12 @@ impl Algorithm for Board {
             thread::sleep(Duration::from_millis(500));
             state.print_board(
                 count,
-                state.depth,
+                0,
                 true,
                 elapsed_time,
                 memory_usage_in_bytes,
                 frontier_list_max_size,
+                false,
             );
         }
         print!("\x1B[13B")
