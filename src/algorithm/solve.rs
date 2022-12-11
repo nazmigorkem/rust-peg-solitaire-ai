@@ -1,6 +1,5 @@
 use std::{
     collections::LinkedList,
-    io,
     rc::Rc,
     thread,
     time::{Duration, Instant},
@@ -10,7 +9,10 @@ use psutil::process::Process;
 
 use crate::peg_solitaire::Board;
 
-use super::enums::{Algorithm, FrontierType, Method};
+use super::{
+    enums::{FrontierType, Method},
+    traits::Algorithm,
+};
 
 impl Algorithm for Board {
     fn solve(
@@ -21,7 +23,6 @@ impl Algorithm for Board {
         time_limit: u16,
     ) {
         let is_queue = frontier_type == FrontierType::Queue;
-        let mut final_result: Rc<Board> = Rc::new(Board::new());
         let mut count = 1;
         let start = Instant::now();
         let process = Process::current().unwrap();
@@ -46,16 +47,14 @@ impl Algorithm for Board {
                 if current.depth < depth_limit {
                     current.generate_possible_moves(&method, &mut frontier_list);
                 }
-                if timing_thread.is_finished() {
-                    finish_state = 2;
+                if !Board::are_constraints_satisfied(
+                    &timing_thread,
+                    &mut finish_state,
+                    &count,
+                    &mut memory_usage_in_bytes,
+                    &process,
+                ) {
                     break 'outer;
-                }
-                if count % 50_000 == 0 {
-                    memory_usage_in_bytes = process.memory_info().unwrap().vms();
-                    if memory_usage_in_bytes > 1 << 33 {
-                        finish_state = 3;
-                        break 'outer;
-                    }
                 }
                 if count % 1_000_000 == 0 {
                     best_board.print_board(
@@ -70,7 +69,6 @@ impl Algorithm for Board {
                 }
                 if best_board.depth < current.depth {
                     best_board = Rc::clone(&current);
-                    final_result = Rc::clone(&current);
                 }
                 if frontier_list_max_size < frontier_list.len() {
                     frontier_list_max_size = frontier_list.len();
@@ -78,69 +76,20 @@ impl Algorithm for Board {
                 if current.is_goal_state() {
                     finish_state = 1;
                     memory_usage_in_bytes = process.memory_info().unwrap().vms();
-                    final_result = current;
+                    best_board = Rc::clone(&current);
                     break 'outer;
                 }
             }
             depth_limit += 1;
         }
         let elapsed_time = start.elapsed();
-        let is_goal_string = if *best_board.is_solution.borrow() {
-            format!(
-                "Sub-optimum Solution Found with {} remaining pegs. Do you want to print the solution? (y/n)",
-                32 - best_board.depth
-            )
-        } else {
-            format!("No solution found")
-        };
-        match finish_state {
-            1 => {
-                println!(
-                    "\x1B[2K\x1B[JOptimum solution found. Would you like to print the solution? (y/n)"
-                );
-            }
-            2 => {
-                println!("\x1B[2K\x1B[JTime Limit - {}", is_goal_string);
-            }
-            3 => {
-                println!("\x1B[2K\x1B[JOut of Memory - {}", is_goal_string);
-            }
-            _ => {}
-        };
-        if !*best_board.is_solution.borrow() {
-            return;
-        }
-        let mut iterator = final_result.as_ref();
-        let mut result_states: Vec<Board> = Vec::new();
-        result_states.push(final_result.as_ref().clone());
-        while {
-            iterator = iterator.parent.as_ref().unwrap();
-            result_states.push(iterator.to_owned());
-            !iterator.parent.is_none()
-        } {}
-        let mut choice = String::new();
-        while {
-            io::stdin().read_line(&mut choice).unwrap();
-            match choice.trim() {
-                "y" | "n" => false,
-                _ => true,
-            }
-        } {}
-        if choice.trim() == "n" {
-            return;
-        }
-        for state in result_states.iter().rev() {
-            thread::sleep(Duration::from_millis(500));
-            state.print_board(
-                count,
-                0,
-                true,
-                elapsed_time,
-                memory_usage_in_bytes,
-                frontier_list_max_size,
-                false,
-            );
-        }
-        print!("\x1B[13B")
+        Board::print_solution(
+            best_board,
+            finish_state,
+            count,
+            elapsed_time,
+            memory_usage_in_bytes,
+            frontier_list_max_size,
+        )
     }
 }

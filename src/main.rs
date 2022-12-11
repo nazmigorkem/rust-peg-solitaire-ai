@@ -3,7 +3,10 @@ mod peg_solitaire;
 
 use std::{env::args, time::Duration};
 
-use crate::algorithm::enums::{Algorithm, FrontierType, Method};
+use crate::algorithm::{
+    enums::{FrontierType, Method},
+    traits::Algorithm,
+};
 
 use self::peg_solitaire::Board;
 
