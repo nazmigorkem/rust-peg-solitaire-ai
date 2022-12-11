@@ -143,6 +143,7 @@ impl Board {
         clear: bool,
         elapsed_time: Duration,
         memory_usage: u64,
+        frontier_list_max_size: usize,
     ) {
         let mut board: Vec<Vec<&str>> = vec![vec!["  "; 7]; 7];
         if iteration_count != 0 {
@@ -159,6 +160,9 @@ impl Board {
                 "\x1B[2KMemory Usage: {:>11.3?} MB",
                 (memory_usage as f64 / (1024. * 1024.))
             );
+        }
+        if frontier_list_max_size != 0 {
+            println!("\x1B[2KMaximum Node Count: {:>8}", frontier_list_max_size);
         }
         println!("\x1B[2KRemaining Pegs: {:>12}", 32 - depth);
         println!("\x1B[2KIs solution?: {:>14}", self.is_solution.borrow());
@@ -178,7 +182,7 @@ impl Board {
             print!("\n");
         }
         if clear {
-            print!("\x1b[12F");
+            print!("\x1b[13F");
         }
     }
 }
