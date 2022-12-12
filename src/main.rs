@@ -11,7 +11,7 @@ use crate::algorithm::{
 use self::peg_solitaire::Board;
 
 fn main() {
-    let board = Board::new();
+    let board = Board::new(); // initializing board
     let arguments: Vec<String> = args().collect();
 
     if arguments.len() < 3 {

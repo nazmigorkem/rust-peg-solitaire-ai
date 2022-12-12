@@ -44,22 +44,43 @@ impl Board {
         frontier_list: &mut LinkedList<Rc<Board>>,
     ) {
         let mut outcome_list: Vec<Rc<Board>> = Vec::new();
+        // generating possible moves starts with iterating over existing pegs on the board
         for (i, j) in self.pegs.iter().rev() {
+            let method = Rc::new(method);
             let upper_peg = (*i - 1, *j);
             let bottom_peg = (*i + 1, *j);
+            /*
+               if current peg's upper or bottom position is not out of bounds we are checking by XOR operation whether
+               they are in different state.
+               It means whether one of them is empty and the other one is peg.
+               If they are satisfy the constraints, then move is applied to the board and pushed to the outcome
+               list for further operations.
+            */
             if !Board::is_out_of_bounds(upper_peg) && !Board::is_out_of_bounds(bottom_peg) {
                 let is_upper_peg = self.pegs.contains(&upper_peg);
                 let is_bottom_peg = self.pegs.contains(&bottom_peg);
 
                 if is_upper_peg ^ is_bottom_peg {
                     if is_upper_peg {
-                        self.apply_moves((i, j), upper_peg, bottom_peg, &mut outcome_list)
+                        self.apply_moves(
+                            (i, j),
+                            upper_peg,
+                            bottom_peg,
+                            &mut outcome_list,
+                            Method::Heuristic == **method,
+                        )
                     } else {
-                        self.apply_moves((i, j), bottom_peg, upper_peg, &mut outcome_list)
+                        self.apply_moves(
+                            (i, j),
+                            bottom_peg,
+                            upper_peg,
+                            &mut outcome_list,
+                            Method::Heuristic == **method,
+                        )
                     }
                 }
             }
-
+            // same check applies for horizontally
             let left_peg = (*i, *j - 1);
             let right_peg = (*i, *j + 1);
             if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
@@ -68,18 +89,33 @@ impl Board {
 
                 if left_peg_contain ^ right_peg_contain {
                     if left_peg_contain {
-                        self.apply_moves((i, j), left_peg, right_peg, &mut outcome_list);
+                        self.apply_moves(
+                            (i, j),
+                            left_peg,
+                            right_peg,
+                            &mut outcome_list,
+                            Method::Heuristic == **method,
+                        );
                     } else {
-                        self.apply_moves((i, j), right_peg, left_peg, &mut outcome_list);
+                        self.apply_moves(
+                            (i, j),
+                            right_peg,
+                            left_peg,
+                            &mut outcome_list,
+                            Method::Heuristic == **method,
+                        );
                     }
                 }
             }
         }
-
+        // if outcome list is empty, that means current board is sub-optimal or optimal solution
         *self.is_solution.borrow_mut() = outcome_list.len() == 0;
+        // if it is solution, then no need to do further operations
         if *self.is_solution.borrow() {
             return;
         }
+        // if it is not a solution, then we are ordering the outcome list depending on method
+        // and then we push ordered values to the frontier list
         match method {
             Method::Ordered => (),
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
@@ -96,13 +132,20 @@ impl Board {
         peg_will_murder: (u8, u8),
         peg_will_move_to: (u8, u8),
         outcome_list: &mut Vec<Rc<Board>>,
+        is_heuristic: bool,
     ) {
         let mut new_pegs = self.pegs.clone();
         let new_depth = self.depth + 1;
+        // simply remove current and murderer peg from peg's list and insert the
+        // peg to the move location
         new_pegs.remove(&(*i, *j));
         new_pegs.remove(&peg_will_murder);
         new_pegs.insert(peg_will_move_to);
-        let heuristic_value = Board::calculate_heuristic_value(&new_pegs);
+        let heuristic_value = if is_heuristic {
+            Board::calculate_heuristic_value(&new_pegs)
+        } else {
+            0
+        };
         outcome_list.push(Rc::new(Board {
             pegs: new_pegs,
             depth: new_depth,
@@ -113,6 +156,10 @@ impl Board {
     }
 
     pub fn calculate_heuristic_value(pegs: &BTreeSet<(u8, u8)>) -> u8 {
+        /*
+            Simply, iterating all pegs and calculate their lonliness value
+            by checking whether there are pegs near them. (vertically and horizontally)
+        */
         let mut result = 0;
         for (i, j) in pegs.iter() {
             result += if !pegs.contains(&(*i + 1, *j)) { 1 } else { 0 };

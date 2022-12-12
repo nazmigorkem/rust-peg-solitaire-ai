@@ -17,6 +17,7 @@ impl Algorithm for Board {
         mut depth_limit: u8,
         time_limit: u16,
     ) {
+        // initiliazing local variables for algorithm and creating threads for constraint checks
         let is_queue = frontier_type == FrontierType::Queue;
         let mut count = 1;
         let start = Instant::now();
@@ -24,25 +25,34 @@ impl Algorithm for Board {
         let mut memory_usage_in_bytes: u64 = 0;
         let time_limit_in_seconds = time_limit * 60;
         let mut best_board: Rc<Board> = Rc::new(Board::new());
+        // for thread communication, used mpsc channels
         let (memory_sender, memory_receiver) = mpsc::channel();
         let (time_checker, time_receiver) = mpsc::channel();
         Board::timing_thread(time_limit_in_seconds as u64, time_checker);
         Board::memory_thread(memory_sender);
         let mut frontier_list_max_size = 0;
         let mut finish_state = 0;
+        // main loop starts here
         'outer: while depth_limit < 33 {
             let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
             self.generate_possible_moves(&method, &mut frontier_list);
             while !frontier_list.is_empty() {
                 count += 1;
+                // popping the current node via checking the type of the algorithm
+                // if it is BFS => use queue
+                // else => use stack
                 let current = if is_queue {
                     frontier_list.pop_front().unwrap()
                 } else {
                     frontier_list.pop_back().unwrap()
                 };
+                // checks the depth limit for iterative deepening
+                // if default DFS is used, then depth_limit is given 32 which is the solution depth
                 if current.depth < depth_limit {
                     current.generate_possible_moves(&method, &mut frontier_list);
                 }
+                // check whether the constraints are satisfied
+                // if not break the outer loop, so program can stop
                 if !Board::are_constraints_satisfied(
                     time_receiver.try_recv().unwrap_or(false),
                     &mut finish_state,
@@ -64,6 +74,7 @@ impl Algorithm for Board {
                         true,
                     );
                 }
+                // update best board depending on its depth
                 if best_board.depth < current.depth {
                     best_board = Rc::clone(&current);
                 }
