@@ -1,9 +1,4 @@
-use std::{
-    collections::LinkedList,
-    rc::Rc,
-    thread,
-    time::{Duration, Instant},
-};
+use std::{collections::LinkedList, rc::Rc, sync::mpsc, time::Instant};
 
 use psutil::process::Process;
 
@@ -11,7 +6,7 @@ use crate::peg_solitaire::Board;
 
 use super::{
     enums::{FrontierType, Method},
-    traits::Algorithm,
+    traits::{Algorithm, Check},
 };
 
 impl Algorithm for Board {
@@ -29,9 +24,9 @@ impl Algorithm for Board {
         let mut memory_usage_in_bytes: u64 = 0;
         let time_limit_in_seconds = time_limit * 60;
         let mut best_board: Rc<Board> = Rc::new(Board::new());
-        let timing_thread = thread::spawn(move || {
-            thread::sleep(Duration::from_secs(time_limit_in_seconds as u64));
-        });
+        let (tx, rx) = mpsc::channel();
+        let timing_thread = Board::timing_thread(time_limit_in_seconds as u64);
+        Board::memory_thread(tx);
         let mut frontier_list_max_size = 0;
         let mut finish_state = 0;
         'outer: while depth_limit < 33 {
@@ -50,9 +45,8 @@ impl Algorithm for Board {
                 if !Board::are_constraints_satisfied(
                     &timing_thread,
                     &mut finish_state,
-                    &count,
+                    rx.try_recv().unwrap_or((memory_usage_in_bytes, false)),
                     &mut memory_usage_in_bytes,
-                    &process,
                 ) {
                     break 'outer;
                 }

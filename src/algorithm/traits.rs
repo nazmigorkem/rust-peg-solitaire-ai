@@ -1,6 +1,7 @@
 use std::{
     io,
     rc::Rc,
+    sync::mpsc::Sender,
     thread::{self, JoinHandle},
     time::Duration,
 };
@@ -98,21 +99,23 @@ pub trait Algorithm {
     fn are_constraints_satisfied(
         timing_thread: &JoinHandle<()>,
         finish_state: &mut u8,
-        count: &u64,
+        is_out_of_memory: (u64, bool),
         memory_usage_in_bytes: &mut u64,
-        process: &Process,
     ) -> bool {
         if timing_thread.is_finished() {
             *finish_state = 2;
             return false;
         }
-        if count % 50_000 == 0 {
-            *memory_usage_in_bytes = process.memory_info().unwrap().vms();
-            if *memory_usage_in_bytes > 1 << 33 {
-                *finish_state = 3;
-                return false;
-            }
+        *memory_usage_in_bytes = is_out_of_memory.0;
+        if is_out_of_memory.1 {
+            *finish_state = 3;
+            return false;
         }
         true
     }
+}
+
+pub trait Check {
+    fn timing_thread(time_limit_in_seconds: u64) -> JoinHandle<()>;
+    fn memory_thread(tx: Sender<(u64, bool)>) -> JoinHandle<()>;
 }
