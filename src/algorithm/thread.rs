@@ -22,9 +22,10 @@ impl Check for Board {
             }
         })
     }
-    fn timing_thread(time_limit_in_seconds: u64) -> JoinHandle<()> {
+    fn timing_thread(time_limit_in_seconds: u64, tx: Sender<bool>) -> JoinHandle<()> {
         thread::spawn(move || {
             thread::sleep(Duration::from_secs(time_limit_in_seconds));
+            tx.send(true).unwrap();
         })
     }
 }

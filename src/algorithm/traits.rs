@@ -6,8 +6,6 @@ use std::{
     time::Duration,
 };
 
-use psutil::process::Process;
-
 use crate::peg_solitaire::Board;
 
 use super::enums::{FrontierType, Method};
@@ -97,12 +95,12 @@ pub trait Algorithm {
         print!("\x1B[13B")
     }
     fn are_constraints_satisfied(
-        timing_thread: &JoinHandle<()>,
+        is_time_up: bool,
         finish_state: &mut u8,
         is_out_of_memory: (u64, bool),
         memory_usage_in_bytes: &mut u64,
     ) -> bool {
-        if timing_thread.is_finished() {
+        if is_time_up {
             *finish_state = 2;
             return false;
         }
@@ -116,6 +114,6 @@ pub trait Algorithm {
 }
 
 pub trait Check {
-    fn timing_thread(time_limit_in_seconds: u64) -> JoinHandle<()>;
     fn memory_thread(tx: Sender<(u64, bool)>) -> JoinHandle<()>;
+    fn timing_thread(time_limit_in_seconds: u64, tx: Sender<bool>) -> JoinHandle<()>;
 }

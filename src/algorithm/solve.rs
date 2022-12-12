@@ -24,9 +24,10 @@ impl Algorithm for Board {
         let mut memory_usage_in_bytes: u64 = 0;
         let time_limit_in_seconds = time_limit * 60;
         let mut best_board: Rc<Board> = Rc::new(Board::new());
-        let (tx, rx) = mpsc::channel();
-        let timing_thread = Board::timing_thread(time_limit_in_seconds as u64);
-        Board::memory_thread(tx);
+        let (memory_sender, memory_receiver) = mpsc::channel();
+        let (time_checker, time_receiver) = mpsc::channel();
+        Board::timing_thread(time_limit_in_seconds as u64, time_checker);
+        Board::memory_thread(memory_sender);
         let mut frontier_list_max_size = 0;
         let mut finish_state = 0;
         'outer: while depth_limit < 33 {
@@ -43,9 +44,11 @@ impl Algorithm for Board {
                     current.generate_possible_moves(&method, &mut frontier_list);
                 }
                 if !Board::are_constraints_satisfied(
-                    &timing_thread,
+                    time_receiver.try_recv().unwrap_or(false),
                     &mut finish_state,
-                    rx.try_recv().unwrap_or((memory_usage_in_bytes, false)),
+                    memory_receiver
+                        .try_recv()
+                        .unwrap_or((memory_usage_in_bytes, false)),
                     &mut memory_usage_in_bytes,
                 ) {
                     break 'outer;
