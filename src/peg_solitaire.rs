@@ -49,6 +49,8 @@ impl Board {
             let method = Rc::new(method);
             let upper_peg = (*i - 1, *j);
             let bottom_peg = (*i + 1, *j);
+            let left_peg = (*i, *j - 1);
+            let right_peg = (*i, *j + 1);
             /*
                if current peg's upper or bottom position is not out of bounds we are checking by XOR operation whether
                they are in different state.
@@ -60,7 +62,7 @@ impl Board {
                 let is_upper_peg = self.pegs.contains(&upper_peg);
                 let is_bottom_peg = self.pegs.contains(&bottom_peg);
 
-                if is_upper_peg ^ is_bottom_peg {
+                if is_upper_peg != is_bottom_peg {
                     if is_upper_peg {
                         self.apply_moves(
                             (i, j),
@@ -81,13 +83,11 @@ impl Board {
                 }
             }
             // same check applies for horizontally
-            let left_peg = (*i, *j - 1);
-            let right_peg = (*i, *j + 1);
             if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
                 let left_peg_contain = self.pegs.contains(&left_peg);
                 let right_peg_contain = self.pegs.contains(&right_peg);
 
-                if left_peg_contain ^ right_peg_contain {
+                if left_peg_contain != right_peg_contain {
                     if left_peg_contain {
                         self.apply_moves(
                             (i, j),
@@ -135,7 +135,6 @@ impl Board {
         is_heuristic: bool,
     ) {
         let mut new_pegs = self.pegs.clone();
-        let new_depth = self.depth + 1;
         // simply remove current and murderer peg from peg's list and insert the
         // peg to the move location
         new_pegs.remove(&(*i, *j));
@@ -148,7 +147,7 @@ impl Board {
         };
         outcome_list.push(Rc::new(Board {
             pegs: new_pegs,
-            depth: new_depth,
+            depth: self.depth + 1,
             parent: Some(Rc::new(self.clone())),
             heuristic_value,
             is_solution: RefCell::new(false),

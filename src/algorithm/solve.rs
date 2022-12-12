@@ -19,7 +19,7 @@ impl Algorithm for Board {
     ) {
         // initiliazing local variables for algorithm and creating threads for constraint checks
         let is_queue = frontier_type == FrontierType::Queue;
-        let mut count = 1;
+        let mut count = 0;
         let start = Instant::now();
         let process = Process::current().unwrap();
         let mut memory_usage_in_bytes: u64 = 0;
@@ -33,9 +33,10 @@ impl Algorithm for Board {
         let mut frontier_list_max_size = 0;
         let mut finish_state = 0;
         // main loop starts here
-        'outer: while depth_limit < 33 {
-            let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
+        let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
+        'outer: loop {
             self.generate_possible_moves(&method, &mut frontier_list);
+            count += 1;
             while !frontier_list.is_empty() {
                 count += 1;
                 // popping the current node via checking the type of the algorithm

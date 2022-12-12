@@ -64,7 +64,7 @@ fn main() {
             board.solve(FrontierType::Stack, Method::Ordered, 32, time_limit);
         }
         "iterative-dfs" => {
-            board.solve(FrontierType::Stack, Method::Ordered, 1, time_limit);
+            board.solve(FrontierType::Stack, Method::Ordered, 0, time_limit);
         }
         "random-dfs" => {
             board.solve(FrontierType::Stack, Method::Random, 32, time_limit);
