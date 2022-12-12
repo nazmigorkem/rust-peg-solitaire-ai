@@ -38,7 +38,6 @@ impl Algorithm for Board {
             self.generate_possible_moves(&method, &mut frontier_list);
             count += 1;
             while !frontier_list.is_empty() {
-                count += 1;
                 // popping the current node via checking the type of the algorithm
                 // if it is BFS => use queue
                 // else => use stack
@@ -49,9 +48,11 @@ impl Algorithm for Board {
                 };
                 // checks the depth limit for iterative deepening
                 // if default DFS is used, then depth_limit is given 32 which is the solution depth
-                if current.depth < depth_limit {
-                    current.generate_possible_moves(&method, &mut frontier_list);
+                if current.depth >= depth_limit {
+                    continue;
                 }
+                count += 1;
+                current.generate_possible_moves(&method, &mut frontier_list);
                 // check whether the constraints are satisfied
                 // if not break the outer loop, so program can stop
                 if !Board::are_constraints_satisfied(
