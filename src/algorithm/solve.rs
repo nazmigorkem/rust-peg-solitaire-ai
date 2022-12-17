@@ -18,7 +18,6 @@ impl Algorithm for Board {
         time_limit: u16,
     ) {
         // initiliazing local variables for algorithm and creating threads for constraint checks
-        let is_queue = frontier_type == FrontierType::Queue;
         let mut count = 0;
         let start = Instant::now();
         let process = Process::current().unwrap();
@@ -35,24 +34,22 @@ impl Algorithm for Board {
         // main loop starts here
         let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
         'outer: loop {
-            self.generate_possible_moves(&method, &mut frontier_list);
+            self.generate_possible_moves(&method, &mut frontier_list, depth_limit);
             count += 1;
             while !frontier_list.is_empty() {
+                count += 1;
                 // popping the current node via checking the type of the algorithm
                 // if it is BFS => use queue
                 // else => use stack
-                let current = if is_queue {
-                    frontier_list.pop_front().unwrap()
-                } else {
-                    frontier_list.pop_back().unwrap()
-                };
+                let current = match frontier_type {
+                    FrontierType::Queue => frontier_list.pop_front(),
+                    FrontierType::Stack => frontier_list.pop_back(),
+                }
+                .unwrap();
                 // checks the depth limit for iterative deepening
                 // if default DFS is used, then depth_limit is given 32 which is the solution depth
-                if current.depth >= depth_limit {
-                    continue;
-                }
-                count += 1;
-                current.generate_possible_moves(&method, &mut frontier_list);
+                current.generate_possible_moves(&method, &mut frontier_list, depth_limit);
+
                 // check whether the constraints are satisfied
                 // if not break the outer loop, so program can stop
                 if !Board::are_constraints_satisfied(
@@ -65,6 +62,13 @@ impl Algorithm for Board {
                 ) {
                     break 'outer;
                 }
+                // update best board depending on its depth
+                if *current.is_solution.borrow() && best_board.depth < current.depth {
+                    best_board = Rc::clone(&current);
+                }
+                if frontier_list_max_size < frontier_list.len() {
+                    frontier_list_max_size = frontier_list.len();
+                }
                 if count % 1_000_000 == 0 {
                     best_board.print_board(
                         count,
@@ -75,13 +79,6 @@ impl Algorithm for Board {
                         frontier_list_max_size,
                         true,
                     );
-                }
-                // update best board depending on its depth
-                if best_board.depth < current.depth {
-                    best_board = Rc::clone(&current);
-                }
-                if frontier_list_max_size < frontier_list.len() {
-                    frontier_list_max_size = frontier_list.len();
                 }
                 if current.is_goal_state() {
                     finish_state = 1;

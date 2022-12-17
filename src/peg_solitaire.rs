@@ -42,15 +42,15 @@ impl Board {
         &self,
         method: &Method,
         frontier_list: &mut LinkedList<Rc<Board>>,
+        depth_limit: u8,
     ) {
         let mut outcome_list: Vec<Rc<Board>> = Vec::new();
+        let mut is_move_found = false;
+        let is_leaf = self.depth == depth_limit;
         // generating possible moves starts with iterating over existing pegs on the board
         for (i, j) in self.pegs.iter().rev() {
-            let method = Rc::new(method);
             let upper_peg = (*i - 1, *j);
             let bottom_peg = (*i + 1, *j);
-            let left_peg = (*i, *j - 1);
-            let right_peg = (*i, *j + 1);
             /*
                if current peg's upper or bottom position is not out of bounds we are checking by XOR operation whether
                they are in different state.
@@ -63,13 +63,17 @@ impl Board {
                 let is_bottom_peg = self.pegs.contains(&bottom_peg);
 
                 if is_upper_peg != is_bottom_peg {
+                    if is_leaf {
+                        is_move_found = true;
+                        break;
+                    }
                     if is_upper_peg {
                         self.apply_moves(
                             (i, j),
                             upper_peg,
                             bottom_peg,
                             &mut outcome_list,
-                            Method::Heuristic == **method,
+                            Method::Heuristic == *method,
                         )
                     } else {
                         self.apply_moves(
@@ -77,24 +81,30 @@ impl Board {
                             bottom_peg,
                             upper_peg,
                             &mut outcome_list,
-                            Method::Heuristic == **method,
+                            Method::Heuristic == *method,
                         )
                     }
                 }
             }
+            let left_peg = (*i, *j - 1);
+            let right_peg = (*i, *j + 1);
             // same check applies for horizontally
             if !Board::is_out_of_bounds(left_peg) && !Board::is_out_of_bounds(right_peg) {
-                let left_peg_contain = self.pegs.contains(&left_peg);
-                let right_peg_contain = self.pegs.contains(&right_peg);
+                let is_left_peg = self.pegs.contains(&left_peg);
+                let is_right_peg = self.pegs.contains(&right_peg);
 
-                if left_peg_contain != right_peg_contain {
-                    if left_peg_contain {
+                if is_left_peg != is_right_peg {
+                    if is_leaf {
+                        is_move_found = true;
+                        break;
+                    }
+                    if is_left_peg {
                         self.apply_moves(
                             (i, j),
                             left_peg,
                             right_peg,
                             &mut outcome_list,
-                            Method::Heuristic == **method,
+                            Method::Heuristic == *method,
                         );
                     } else {
                         self.apply_moves(
@@ -102,21 +112,25 @@ impl Board {
                             right_peg,
                             left_peg,
                             &mut outcome_list,
-                            Method::Heuristic == **method,
+                            Method::Heuristic == *method,
                         );
                     }
                 }
             }
         }
         // if outcome list is empty, that means current board is sub-optimal or optimal solution
-        *self.is_solution.borrow_mut() = outcome_list.len() == 0;
+        if !is_leaf {
+            *self.is_solution.borrow_mut() = outcome_list.len() == 0;
+        } else {
+            *self.is_solution.borrow_mut() = !is_move_found;
+        }
         // if it is solution, then no need to do further operations
-        if *self.is_solution.borrow() {
+        if *self.is_solution.borrow() || is_leaf {
             return;
         }
         // if it is not a solution, then we are ordering the outcome list depending on method
         // and then we push ordered values to the frontier list
-        match method {
+        match *method {
             Method::Ordered => (),
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
             Method::Heuristic => outcome_list.sort(),
