@@ -34,7 +34,7 @@ impl Algorithm for Board {
         // main loop starts here
         let mut frontier_list: LinkedList<Rc<Board>> = LinkedList::new();
         'outer: loop {
-            self.generate_possible_moves(&method, &mut frontier_list, depth_limit);
+            self.generate_possible_moves(&method, &mut frontier_list, depth_limit, &frontier_type);
             count += 1;
             while !frontier_list.is_empty() {
                 count += 1;
@@ -48,7 +48,12 @@ impl Algorithm for Board {
                 .unwrap();
                 // checks the depth limit for iterative deepening
                 // if default DFS is used, then depth_limit is given 32 which is the solution depth
-                current.generate_possible_moves(&method, &mut frontier_list, depth_limit);
+                current.generate_possible_moves(
+                    &method,
+                    &mut frontier_list,
+                    depth_limit,
+                    &frontier_type,
+                );
 
                 // check whether the constraints are satisfied
                 // if not break the outer loop, so program can stop

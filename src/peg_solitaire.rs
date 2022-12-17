@@ -7,7 +7,7 @@ use std::{
 
 use rand::{seq::SliceRandom, thread_rng};
 
-use crate::algorithm::enums::Method;
+use crate::algorithm::enums::{FrontierType, Method};
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -43,6 +43,7 @@ impl Board {
         method: &Method,
         frontier_list: &mut LinkedList<Rc<Board>>,
         depth_limit: u8,
+        frontier_type: &FrontierType,
     ) {
         let mut outcome_list: Vec<Rc<Board>> = Vec::new();
         let mut is_move_found = false;
@@ -130,7 +131,11 @@ impl Board {
         }
         // if it is not a solution, then we are ordering the outcome list depending on method
         // and then we push ordered values to the frontier list
-        match *method {
+        match frontier_type {
+            FrontierType::Queue => outcome_list.reverse(),
+            FrontierType::Stack => (),
+        }
+        match method {
             Method::Ordered => (),
             Method::Random => outcome_list.shuffle(&mut thread_rng()),
             Method::Heuristic => outcome_list.sort(),
