@@ -64,6 +64,8 @@ impl Board {
                 let is_bottom_peg = self.pegs.contains(&bottom_peg);
 
                 if is_upper_peg != is_bottom_peg {
+                    // if it is leaf then no need to calculate the moves, just check if it is solution or not
+                    // this is essential for iterative deepening
                     if is_leaf {
                         is_move_found = true;
                         break;
@@ -95,6 +97,7 @@ impl Board {
                 let is_right_peg = self.pegs.contains(&right_peg);
 
                 if is_left_peg != is_right_peg {
+                    // same leaf check here
                     if is_leaf {
                         is_move_found = true;
                         break;
@@ -120,6 +123,7 @@ impl Board {
             }
         }
         // if outcome list is empty, that means current board is sub-optimal or optimal solution
+        // if it is leaf just check whether move is found or not
         if !is_leaf {
             *self.is_solution.borrow_mut() = outcome_list.len() == 0;
         } else {
